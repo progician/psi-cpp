@@ -1,6 +1,8 @@
 #include "elgamal.hpp"
 
+#include <tuple>
 #include <boost/assert.hpp>
+#include <iostream>
 
 namespace ElGamal {
 
@@ -46,9 +48,11 @@ namespace ElGamal {
   encrypt( fg::Elem const& key, fg::Elem const& plainText )
   {
     auto const r = key.group.random();
+    auto const a = key ^ r;
+    auto const b = key.group.g() ^ plainText;
     return Cipher(
       key.group.g() ^ r,
-      ( key ^ r ) * (key.group.g() ^ plainText ),
+      a * b,
       key );
   }
 

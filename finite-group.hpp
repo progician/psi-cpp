@@ -12,14 +12,18 @@ namespace FiniteGroup {
   {
     uint64_t const order;
     uint64_t const generator;
+    uint64_t fixedRandom;
     mutable std::random_device randomDevice;
     mutable std::uniform_int_distribution< uint64_t > distribution;
 
     Group() = delete;
+
     Group( uint64_t const o, uint64_t const g )
     : order( o )
     , generator( g )
+    , fixedRandom( 0ull )
     , distribution( 0, o ) { }
+
     Group( Group const& other ) = default;
 
     Elem random() const;

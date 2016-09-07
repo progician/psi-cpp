@@ -5,6 +5,7 @@
 #include "polynomial.hpp"
 #include <set>
 #include <stdint.h>
+#include <algorithm>
 
 namespace PrivateIntersection {
 
@@ -15,7 +16,7 @@ namespace PrivateIntersection {
       auto count = std::distance( first, last );
       std::vector< fg::Elem > normalized( count, publicKey.group.random() );
       std::transform( first, last, normalized.begin(),
-                      [&]( uint64_t const& elem ) { return publicKey.group( elem ); } );
+                      [&]( int64_t const& elem ) { return publicKey.group( elem ); } );
 
       auto const polynomial = poly::fromRoots(
         normalized.begin(), normalized.end(),
