@@ -7,9 +7,8 @@
 
 namespace poly {
 
-  template< typename CoefficientType, typename VariableType,
-            typename PolynomialIt >
-    CoefficientType
+  template< typename VariableType, typename PolynomialIt >
+    typename PolynomialIt::value_type
     eval( VariableType const& x, PolynomialIt first, PolynomialIt last )
     {
       BOOST_ASSERT( first != last );
@@ -17,7 +16,7 @@ namespace poly {
       if ( std::next( first ) == last )
         return *first;
 
-      return *first + eval<CoefficientType, VariableType, PolynomialIt>( x, std::next( first ), last ) * x;
+      return *first + eval( x, std::next( first ), last ) * x;
     }
 
 

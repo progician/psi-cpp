@@ -100,9 +100,8 @@ main( int argc, char** argv )
   auto const fromClient = PrivateIntersection::prepareLocalSet( clientSet.begin(), clientSet.end(), std::get<1>( keys ) );
 
   for ( auto const e : clientSet ) {
-
     auto const fe = cryptoGroup( e );
-    ElGamal::Cipher const res = poly::eval< ElGamal::Cipher, fg::Elem, std::vector< ElGamal::Cipher >::const_iterator >( fe, fromClient.begin(), fromClient.end() );
+    ElGamal::Cipher const res = poly::eval( fe, fromClient.begin(), fromClient.end() );
     fg::Elem const decrypted = ElGamal::decrypt( std::get<0>( keys ), res );
     if ( decrypted != cryptoGroup.plusOne() )
       std::cerr << "failed root: " << e << std::endl;
