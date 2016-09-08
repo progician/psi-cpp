@@ -41,7 +41,7 @@ namespace FiniteGroup {
   : public boost::addable< Elem >
   , public boost::subtractable< Elem >
   , public boost::multipliable< Elem >
-  , public boost::xorable< Elem, uint64_t >
+  , public boost::xorable< Elem, int64_t >
   , public boost::xorable< Elem >
   , public boost::dividable< Elem >
   , public boost::equality_comparable< Elem >
@@ -63,7 +63,7 @@ namespace FiniteGroup {
     Elem& operator +=( Elem const& other );
     Elem& operator -=( Elem const& other );
     Elem& operator *=( Elem const& other );
-    Elem& operator ^=( uint64_t const other );
+    Elem& operator ^=( int64_t const other );
     Elem& operator ^=( Elem const& other );
     Elem& operator /=( Elem const& other );
 

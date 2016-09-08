@@ -61,7 +61,7 @@ namespace FiniteGroup {
   Elem
   Group::operator()( int64_t const plainValue ) const
   {
-    return Elem( uint64_t( std::abs( plainValue ) ) % order, *this );
+    return Elem( uint64_t( plainValue % order ), *this );
   }
 
   Elem
@@ -126,12 +126,18 @@ namespace FiniteGroup {
 
 
   Elem&
-  Elem::operator ^=( uint64_t const exponent )
+  Elem::operator ^=( int64_t const exponent )
   {
+    if ( exponent < 0 ) {
+      *this ^= std::abs( exponent );
+      *this = this->inverse();
+      return *this;
+    }
+
     Elem res( 1, group );
     Elem base = *this;
 
-    uint64_t e = exponent;
+    int64_t e = exponent;
     while ( e > 0 ) {
       if ( ( e & 1 ) == 1 ) {
         res *= base;
@@ -150,7 +156,7 @@ namespace FiniteGroup {
   Elem::operator^=( Elem const& exponent )
   {
     BOOST_ASSERT( group == exponent.group );
-    return *this ^= exponent.value;
+    return *this ^= int64_t( exponent.value );
   }
 
 

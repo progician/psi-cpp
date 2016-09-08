@@ -27,7 +27,7 @@ namespace ElGamal {
   keygen( fg::Group const& cryptoGroup );
 
   Cipher
-  encrypt( fg::Elem const& key, fg::Elem const& plainText );
+  encrypt( fg::Elem const& key, int64_t const plainMessage );
 
   fg::Elem
   decrypt( fg::Elem const& key, Cipher const& encryptedMessage );

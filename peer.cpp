@@ -93,35 +93,26 @@ main( int argc, char** argv )
   // std::cout << "input set: " << inputSet << std::endl;
 
   std::vector< int64_t > const clientSet = { 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22 };
-  // std::vector< int64_t > const serverSet = { 3, 6, 9, 12, 15, 18, 21 };
-  fg::Group const cryptoGroup( 2250635938ull, 3 );
+  std::vector< int64_t > const serverSet = { 3, 6, 9, 12, 15, 18, 21 };
+  fg::Group cryptoGroup( 2250635938ull, 3 );
+
   auto const keys = ElGamal::keygen( cryptoGroup );
-  std::cout << "keys: " << std::get<0>( keys ).value << " " << std::get<1>( keys ).value << std::endl;
-
-  /*auto const clientPoly = poly::fromRoots( clientSet.begin(), clientSet.end(), int64_t( -1 ), int64_t( 1 ) );
-  for ( auto const e : clientSet ) {
-    int64_t res = poly::eval< int64_t, int64_t, std::vector< int64_t >::const_iterator >( e, clientPoly.begin(), clientPoly.end() );
-    if ( res != 0 )
-      std::cerr << "failed root: " << e << std::endl;
-  } */
-
   auto const fromClient = PrivateIntersection::prepareLocalSet( clientSet.begin(), clientSet.end(), std::get<1>( keys ) );
 
-  auto const gOnZero = cryptoGroup.g() ^ 0;
   for ( auto const e : clientSet ) {
-    auto const fe = cryptoGroup( e );
 
+    auto const fe = cryptoGroup( e );
     ElGamal::Cipher const res = poly::eval< ElGamal::Cipher, fg::Elem, std::vector< ElGamal::Cipher >::const_iterator >( fe, fromClient.begin(), fromClient.end() );
-    fg::Elem const decrypted = ElGamal::decrypt( std::get<1>( keys ), res );
-    if ( decrypted != gOnZero )
+    fg::Elem const decrypted = ElGamal::decrypt( std::get<0>( keys ), res );
+    if ( decrypted != cryptoGroup.plusOne() )
       std::cerr << "failed root: " << e << std::endl;
   }
 
 
-  /* auto const fromServer = PrivateIntersection::obliviousEvaluation( serverSet.begin(), serverSet.end(), fromClient );
+  auto const fromServer = PrivateIntersection::obliviousEvaluation( serverSet.begin(), serverSet.end(), fromClient );
   auto const intersection = PrivateIntersection::extractIntersection< int64_t, std::vector< int64_t >::const_iterator >( clientSet.begin(), clientSet.end(), fromServer, std::get<0>( keys ) );
 
-  std::cout << intersection << std::endl; */
+  std::cout << intersection << std::endl;
 
   // std::cout << std::endl;
   // std::cout << "Looking for counter part for PSI calculation..." << std::endl;

@@ -45,7 +45,7 @@ namespace ElGamal {
 
 
   Cipher
-  encrypt( fg::Elem const& key, fg::Elem const& plainText )
+  encrypt( fg::Elem const& key, int64_t const plainText )
   {
     auto const r = key.group.random();
     auto const a = key ^ r;

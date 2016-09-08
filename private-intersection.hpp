@@ -13,15 +13,7 @@ namespace PrivateIntersection {
     std::vector< ElGamal::Cipher >
     prepareLocalSet( InputIt first, InputIt last, fg::Elem const& publicKey )
     {
-      auto count = std::distance( first, last );
-      std::vector< fg::Elem > normalized( count, publicKey.group.random() );
-      std::transform( first, last, normalized.begin(),
-                      [&]( int64_t const& elem ) { return publicKey.group( elem ); } );
-
-      auto const polynomial = poly::fromRoots(
-        normalized.begin(), normalized.end(),
-        publicKey.group.minusOne(),
-        publicKey.group.plusOne() );
+      auto const polynomial = poly::fromRoots( first, last, int64_t( -1 ), int64_t( 1 ) );
 
       std::vector< ElGamal::Cipher > result;
       for ( auto const& coeff : polynomial ) {
@@ -60,7 +52,7 @@ namespace PrivateIntersection {
                       [&]( uint64_t const& elem )
                       {
                         auto const& cryptoGroup = privateKey.group;
-                        return cryptoGroup.g() ^ privateKey.group( elem );
+                        return cryptoGroup.g() ^ privateKey.group( int64_t( elem ) );
                       } );
 
       std::set< InputType > results;
