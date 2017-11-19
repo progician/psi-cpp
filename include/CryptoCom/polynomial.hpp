@@ -1,7 +1,7 @@
 #pragma once
 
 #include <boost/assert.hpp>
-#include "finite-group.hpp"
+#include <CryptoCom/finite-group.hpp>
 #include <iterator>
 #include <vector>
 

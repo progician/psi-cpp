@@ -1,4 +1,4 @@
-#include "elgamal.hpp"
+#include <CryptoCom/elgamal.hpp>
 
 #include <tuple>
 #include <boost/assert.hpp>

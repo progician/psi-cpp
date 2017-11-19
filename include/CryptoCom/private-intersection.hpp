@@ -1,8 +1,9 @@
 #pragma once
 
-#include "elgamal.hpp"
-#include "finite-group.hpp"
-#include "polynomial.hpp"
+#include <CryptoCom/elgamal.hpp>
+#include <CryptoCom/finite-group.hpp>
+#include <CryptoCom/polynomial.hpp>
+
 #include <set>
 #include <stdint.h>
 #include <algorithm>

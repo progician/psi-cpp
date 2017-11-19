@@ -1,6 +1,6 @@
 #pragma once
 
-#include "finite-group.hpp"
+#include <CryptoCom/finite-group.hpp>
 #include <boost/operators.hpp>
 
 

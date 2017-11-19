@@ -1,4 +1,4 @@
-#include "private-intersection.hpp"
+#include <CryptoCom/private-intersection.hpp>
 
 #include <iostream>
 #include <set>
