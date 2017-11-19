@@ -38,13 +38,11 @@ namespace FiniteGroup {
 
 
   struct Elem
-  : public boost::addable< Elem >
-  , public boost::subtractable< Elem >
-  , public boost::multipliable< Elem >
-  , public boost::xorable< Elem, int64_t >
-  , public boost::xorable< Elem >
-  , public boost::dividable< Elem >
-  , public boost::equality_comparable< Elem >
+    : public boost::additive< Elem >
+    , public boost::multiplicative< Elem >
+    , public boost::xorable< Elem, int64_t >
+    , public boost::xorable< Elem >
+    , public boost::equality_comparable< Elem >
   {
     uint64_t value;
     Group const& group;
