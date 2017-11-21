@@ -4,8 +4,10 @@ project( private-set-intersection )
 set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 set( CMAKE_CXX_EXTENSIONS OFF )
+set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/share/cmake/Modules )
 
 find_package( Boost REQUIRED )
+find_package( Catch REQUIRED )
 
 #===-----------------------------------------------------------------------===
 # CryptoCom library
@@ -19,7 +21,8 @@ target_include_directories( CryptoCom
     include )
 
 target_link_libraries( CryptoCom
-  Boost::boost )
+  Boost::boost
+  Catch::catch )
 
 
 #===-----------------------------------------------------------------------===
