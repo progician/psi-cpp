@@ -11,7 +11,7 @@ find_package( Catch REQUIRED )
 
 #===-----------------------------------------------------------------------===
 # CryptoCom library
-add_library( CryptoCom
+add_library( CryptoCom STATIC
   src/elgamal.cpp
   src/finite-group.cpp
   src/private-intersection.cpp )
@@ -21,8 +21,19 @@ target_include_directories( CryptoCom
     include )
 
 target_link_libraries( CryptoCom
-  Boost::boost
-  Catch::catch )
+  Boost::boost )
+
+
+#===-----------------------------------------------------------------------===
+# Unit testing
+add_executable( UnitTests
+  unittest/CyclicGroupTest.cpp
+  unittest/UnitTestMain.cpp )
+
+target_link_libraries( UnitTests
+  PRIVATE
+    CryptoCom
+    Catch::catch )
 
 
 #===-----------------------------------------------------------------------===
