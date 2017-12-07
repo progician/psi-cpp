@@ -25,7 +25,7 @@ template< typename Traits >
     }
 
 
-    Elem< Traits > operator+( Elem< Traits > const& other ) {
+    Elem< Traits > operator+( Elem< Traits > const& other ) const {
       return Elem< Traits > {
         ( ordinalIndex_ + other.ordinalIndex_ ) % Traits::Order
       };
@@ -40,17 +40,17 @@ template< typename Traits >
 
 
 
-TEST_CASE( "In cyclic groups" ) {
-  SECTION( "uninitialized element is identity for adding" ) {
-    Elem< ExampleRing > a { 3 };
-    Elem< ExampleRing > b;
+TEST_CASE( "In cyclic rings" ) {
+  SECTION( "uninitialized element is additive identity" ) {
+    Elem< ExampleRing > const a { 3 };
+    Elem< ExampleRing > const b;
     REQUIRE( ( a + b ) == a );
   }
 
   SECTION( "adding element and it's additive inverse is additive identity" ) {
-    Elem< ExampleRing > a { 3 };
+    Elem< ExampleRing > const a { 3 };
     auto const b = -a;
-    auto const zero = ExampleRing::AdditiveIdentity;
+    Elem< ExampleRing > const zero;
     REQUIRE( a + b == zero );
   } 
 }
