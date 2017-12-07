@@ -1,7 +1,6 @@
 #include <catch/catch.hpp>
 
-
-struct SimpleCyclicGroupTraits {
+struct ExampleRing {
   static constexpr int64_t Order = 0x800000;
   static constexpr int64_t Generator = 2;
   static constexpr int64_t AdditiveIdentity = 0;
@@ -31,14 +30,27 @@ template< typename Traits >
         ( ordinalIndex_ + other.ordinalIndex_ ) % Traits::Order
       };
     }
+
+    Elem< Traits > operator-() const {
+      return Elem< Traits > {
+        Traits::Order - ordinalIndex_
+      };
+    }
   };
 
 
 
 TEST_CASE( "In cyclic groups" ) {
   SECTION( "uninitialized element is identity for adding" ) {
-    Elem< SimpleCyclicGroupTraits > a { 3 };
-    Elem< SimpleCyclicGroupTraits > b;
+    Elem< ExampleRing > a { 3 };
+    Elem< ExampleRing > b;
     REQUIRE( ( a + b ) == a );
   }
+
+  SECTION( "adding element and it's additive inverse is additive identity" ) {
+    Elem< ExampleRing > a { 3 };
+    auto const b = -a;
+    auto const zero = ExampleRing::AdditiveIdentity;
+    REQUIRE( a + b == zero );
+  } 
 }
