@@ -23,6 +23,14 @@ template< typename Traits >
     constexpr Elem()
       : ordinalIndex_( Traits::AdditiveIdentity ) {}
 
+    static Elem< Traits > constexpr zero() {
+      return Elem< Traits > { Traits::AdditiveIdentity };
+    }
+
+    static Elem< Traits > constexpr one() {
+      return Elem< Traits > { Traits::MultiplicativeIdentity };
+    }
+
     bool operator ==( Elem const& other ) const {
       return ordinalIndex_ == other.ordinalIndex_;
     }
@@ -55,27 +63,28 @@ template< typename Traits >
 
 
 TEST_CASE( "In cyclic rings" ) {
-  Elem< ExampleRing > const zero;
+  Elem< ExampleRing > constexpr zero;
 
   SECTION( "uninitialized element is additive identity" ) {
-    Elem< ExampleRing > const a { 3 };
+    Elem< ExampleRing > constexpr a { 3 };
     REQUIRE( ( a + zero ) == a );
   }
 
   SECTION( "adding element and its additive inverse is additive identity" ) {
-    Elem< ExampleRing > const a { 3 };
+    Elem< ExampleRing > constexpr a { 3 };
     auto const b = -a;
     REQUIRE( a + b == zero );
   } 
 
   SECTION( "subtraction is adding additive inverse" ) {
-    Elem< ExampleRing > const a { 3 };
+    Elem< ExampleRing > constexpr a { 3 };
     REQUIRE( a - a == zero );
   }
 
   SECTION( "multiplying with multiplicative identity" ) {
-    auto constexpr one = ExampleRing::MultiplicativeIdentity;
-    auto constexpr a { 3 };
+    auto constexpr one = Elem< ExampleRing >::one();
+    Elem< ExampleRing > constexpr a { 3 };
+
     REQUIRE( a * one == a );
   }
 }
