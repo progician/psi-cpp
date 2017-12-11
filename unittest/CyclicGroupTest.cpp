@@ -11,6 +11,34 @@ struct ExampleRing {
 };
 
 
+namespace {
+  template< typename T >
+    std::tuple< T, T, T> ExtendedGCD( T a, T b ) {
+      if ( a == 0 )
+        return std::make_tuple( b, 0, 1 );
+      
+      T g, x, y;
+      std::tie( g, x, y ) = ExtendedGCD( b % a, a );
+      return std::make_tuple( g, y - ( ( b / a ) * x ), x );
+    }
+
+  template< typename T >
+    T InverseModulo( T const a, T const b ) {
+      T g, x;
+      std::tie( g, x, std::ignore ) = ExtendedGCD( a, b );
+
+      if ( g == 1 ) {
+        if ( x < 0 )
+          return b + x;
+
+        return std::abs( x ) % b;
+      }
+
+      throw std::invalid_argument( "relative primes have no inverse modulo" );
+    }
+}
+
+
 template< typename Traits >
   class Elem {
     typename Traits::PrimaryType const ordinalIndex_;
@@ -71,6 +99,12 @@ template< typename Traits >
         auto const base { pow( exponent >> 1 ) };
         return base * base;
       }
+
+
+    Elem< Traits > inverse() const {
+      return Elem< Traits > {
+        InverseModulo( ordinalIndex_, Traits::Order ) };
+    }
      
     friend std::ostream& operator<<( std::ostream&, Elem< Traits > const& );
   };
@@ -86,6 +120,7 @@ operator<<( std::ostream& outputStream, Elem< ExampleRing > const& v ) {
 
 TEST_CASE( "In cyclic rings" ) {
   Elem< ExampleRing > constexpr zero;
+  auto constexpr one = Elem< ExampleRing >::one();
 
   SECTION( "uninitialized element is additive identity" ) {
     Elem< ExampleRing > constexpr a { 3 };
@@ -104,7 +139,6 @@ TEST_CASE( "In cyclic rings" ) {
   }
 
   SECTION( "multiplying with multiplicative identity" ) {
-    auto constexpr one = Elem< ExampleRing >::one();
     Elem< ExampleRing > constexpr a { 3 };
 
     REQUIRE( a * one == a );
@@ -113,5 +147,10 @@ TEST_CASE( "In cyclic rings" ) {
   SECTION( "power is repeated modulo-multiplication" ) {
     Elem< ExampleRing > constexpr a { 3 };
     REQUIRE( a.pow( 2 ) == 9 );
+  }
+
+  SECTION( "multiplication with multiplicative inverse is (multiplicative) identity" ) {
+    Elem< ExampleRing > constexpr a { 3 };
+    REQUIRE( a * a.inverse() == one );
   }
 }
