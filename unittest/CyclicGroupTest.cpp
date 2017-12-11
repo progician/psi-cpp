@@ -1,4 +1,5 @@
 #include <catch/catch.hpp>
+#include <cmath>
 
 struct ExampleRing {
   using PrimaryType = int32_t;
@@ -58,7 +59,28 @@ template< typename Traits >
       return static_cast< typename Traits::PrimaryType >(
           escalatedResults % Traits::Order );
     }
+
+    template< typename IntegralType >
+      Elem< Traits > pow( IntegralType exponent ) const {
+        if ( exponent == 0 )
+          return Elem< Traits >::one();
+
+        if ( ( exponent % 2 ) == 1 )
+          return *this * pow( exponent - 1 );
+
+        auto const base { pow( exponent >> 1 ) };
+        return base * base;
+      }
+     
+    friend std::ostream& operator<<( std::ostream&, Elem< Traits > const& );
   };
+
+
+std::ostream&
+operator<<( std::ostream& outputStream, Elem< ExampleRing > const& v ) {
+  outputStream << v.ordinalIndex_; 
+  return outputStream;
+}
 
 
 
@@ -86,5 +108,10 @@ TEST_CASE( "In cyclic rings" ) {
     Elem< ExampleRing > constexpr a { 3 };
 
     REQUIRE( a * one == a );
+  }
+
+  SECTION( "power is repeated modulo-multiplication" ) {
+    Elem< ExampleRing > constexpr a { 3 };
+    REQUIRE( a.pow( 2 ) == 9 );
   }
 }
