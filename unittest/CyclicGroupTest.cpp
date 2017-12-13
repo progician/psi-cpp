@@ -160,5 +160,6 @@ TEST_CASE( "In cyclic rings" ) {
   SECTION( "negative exponent is multiplied with multiplicative inverse" ) {
     Elem< ExampleRing > constexpr a { 3 };
     REQUIRE( a.pow( -1 ) == a.inverse() );
+    REQUIRE( a.pow( -2 ) == Elem< ExampleRing >{ 9 }.inverse() );
   }
 }
