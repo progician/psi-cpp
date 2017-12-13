@@ -90,6 +90,9 @@ template< typename Traits >
 
     template< typename IntegralType >
       Elem< Traits > pow( IntegralType exponent ) const {
+        if ( exponent < 0 )
+          return pow( std::abs( exponent ) ).inverse();
+
         if ( exponent == 0 )
           return Elem< Traits >::one();
 
@@ -152,5 +155,10 @@ TEST_CASE( "In cyclic rings" ) {
   SECTION( "multiplication with multiplicative inverse is (multiplicative) identity" ) {
     Elem< ExampleRing > constexpr a { 3 };
     REQUIRE( a * a.inverse() == one );
+  }
+
+  SECTION( "negative exponent is multiplied with multiplicative inverse" ) {
+    Elem< ExampleRing > constexpr a { 3 };
+    REQUIRE( a.pow( -1 ) == a.inverse() );
   }
 }
