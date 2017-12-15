@@ -108,6 +108,10 @@ template< typename Traits >
       return Elem< Traits > {
         InverseModulo( ordinalIndex_, Traits::Order ) };
     }
+
+    Elem< Traits > operator /( Elem< Traits > const& other ) const {
+      return *this * other.inverse();
+    }
      
     friend std::ostream& operator<<( std::ostream&, Elem< Traits > const& );
   };
@@ -155,6 +159,14 @@ TEST_CASE( "In cyclic rings" ) {
   SECTION( "multiplication with multiplicative inverse is (multiplicative) identity" ) {
     Elem< ExampleRing > constexpr a { 3 };
     REQUIRE( a * a.inverse() == one );
+  }
+
+  SECTION( "division is multiplication with multiplicative inverse" ) {
+    Elem< ExampleRing > constexpr twenty_seven { 27 };
+    Elem< ExampleRing > constexpr three { 3 };
+    Elem< ExampleRing > constexpr nine { 9 };
+    REQUIRE( twenty_seven / three == nine );
+    REQUIRE( twenty_seven / three == twenty_seven * three.inverse() );
   }
 
   SECTION( "negative exponent is multiplied with multiplicative inverse" ) {
