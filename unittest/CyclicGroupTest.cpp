@@ -1,7 +1,7 @@
 #include <catch/catch.hpp>
 #include <cmath>
 
-struct ExampleRing {
+struct TestRingTraits {
   using PrimaryType = int32_t;
   using EscalationType = int64_t;
   static constexpr PrimaryType Order = 0x800000;
@@ -40,48 +40,48 @@ namespace {
 
 
 template< typename Traits >
-  class Elem {
+  class CyclicRing {
     typename Traits::PrimaryType const ordinalIndex_;
 
   public:
-    constexpr Elem( typename Traits::PrimaryType const ordinalIndex )
+    constexpr CyclicRing( typename Traits::PrimaryType const ordinalIndex )
       : ordinalIndex_( ordinalIndex < Traits::Order
           ? ordinalIndex
           : throw std::runtime_error( "ordinalIndex exceeds ring's order" ) ) { } 
 
-    constexpr Elem()
+    constexpr CyclicRing()
       : ordinalIndex_( Traits::AdditiveIdentity ) {}
 
-    static Elem< Traits > constexpr zero() {
-      return Elem< Traits > { Traits::AdditiveIdentity };
+    static CyclicRing< Traits > constexpr zero() {
+      return CyclicRing< Traits > { Traits::AdditiveIdentity };
     }
 
-    static Elem< Traits > constexpr one() {
-      return Elem< Traits > { Traits::MultiplicativeIdentity };
+    static CyclicRing< Traits > constexpr one() {
+      return CyclicRing< Traits > { Traits::MultiplicativeIdentity };
     }
 
-    bool operator ==( Elem const& other ) const {
+    bool operator ==( CyclicRing const& other ) const {
       return ordinalIndex_ == other.ordinalIndex_;
     }
 
 
-    Elem< Traits > operator+( Elem< Traits > const& other ) const {
-      return Elem< Traits > {
+    CyclicRing< Traits > operator+( CyclicRing< Traits > const& other ) const {
+      return CyclicRing< Traits > {
         ( ordinalIndex_ + other.ordinalIndex_ ) % Traits::Order
       };
     }
 
-    Elem< Traits > operator-() const {
-      return Elem< Traits > {
+    CyclicRing< Traits > operator-() const {
+      return CyclicRing< Traits > {
         Traits::Order - ordinalIndex_
       };
     }
 
-    Elem< Traits >  operator-( Elem< Traits > const& other ) const {
+    CyclicRing< Traits >  operator-( CyclicRing< Traits > const& other ) const {
       return *this + (-other);
     }
 
-    Elem< Traits > operator*( Elem< Traits > const& other ) const {
+    CyclicRing< Traits > operator*( CyclicRing< Traits > const& other ) const {
       typename Traits::EscalationType escalatedResults =
         ordinalIndex_ * other.ordinalIndex_;
       return static_cast< typename Traits::PrimaryType >(
@@ -89,12 +89,12 @@ template< typename Traits >
     }
 
     template< typename IntegralType >
-      Elem< Traits > pow( IntegralType exponent ) const {
+      CyclicRing< Traits > pow( IntegralType exponent ) const {
         if ( exponent < 0 )
           return pow( std::abs( exponent ) ).inverse();
 
         if ( exponent == 0 )
-          return Elem< Traits >::one();
+          return CyclicRing< Traits >::one();
 
         if ( ( exponent % 2 ) == 1 )
           return *this * pow( exponent - 1 );
@@ -104,21 +104,21 @@ template< typename Traits >
       }
 
 
-    Elem< Traits > inverse() const {
-      return Elem< Traits > {
+    CyclicRing< Traits > inverse() const {
+      return CyclicRing< Traits > {
         InverseModulo( ordinalIndex_, Traits::Order ) };
     }
 
-    Elem< Traits > operator /( Elem< Traits > const& other ) const {
+    CyclicRing< Traits > operator /( CyclicRing< Traits > const& other ) const {
       return *this * other.inverse();
     }
      
-    friend std::ostream& operator<<( std::ostream&, Elem< Traits > const& );
+    friend std::ostream& operator<<( std::ostream&, CyclicRing< Traits > const& );
   };
 
 
 std::ostream&
-operator<<( std::ostream& outputStream, Elem< ExampleRing > const& v ) {
+operator<<( std::ostream& outputStream, CyclicRing< TestRingTraits > const& v ) {
   outputStream << v.ordinalIndex_; 
   return outputStream;
 }
@@ -126,52 +126,52 @@ operator<<( std::ostream& outputStream, Elem< ExampleRing > const& v ) {
 
 
 TEST_CASE( "In cyclic rings" ) {
-  Elem< ExampleRing > constexpr zero;
-  auto constexpr one = Elem< ExampleRing >::one();
+  CyclicRing< TestRingTraits > constexpr zero;
+  auto constexpr one = CyclicRing< TestRingTraits >::one();
 
   SECTION( "uninitialized element is additive identity" ) {
-    Elem< ExampleRing > constexpr a { 3 };
+    CyclicRing< TestRingTraits > constexpr a { 3 };
     REQUIRE( ( a + zero ) == a );
   }
 
   SECTION( "adding element and its additive inverse is additive identity" ) {
-    Elem< ExampleRing > constexpr a { 3 };
+    CyclicRing< TestRingTraits > constexpr a { 3 };
     auto const b = -a;
     REQUIRE( a + b == zero );
   } 
 
   SECTION( "subtraction is adding additive inverse" ) {
-    Elem< ExampleRing > constexpr a { 3 };
+    CyclicRing< TestRingTraits > constexpr a { 3 };
     REQUIRE( a - a == zero );
   }
 
   SECTION( "multiplying with multiplicative identity" ) {
-    Elem< ExampleRing > constexpr a { 3 };
+    CyclicRing< TestRingTraits > constexpr a { 3 };
 
     REQUIRE( a * one == a );
   }
 
   SECTION( "power is repeated modulo-multiplication" ) {
-    Elem< ExampleRing > constexpr a { 3 };
+    CyclicRing< TestRingTraits > constexpr a { 3 };
     REQUIRE( a.pow( 2 ) == 9 );
   }
 
   SECTION( "multiplication with multiplicative inverse is (multiplicative) identity" ) {
-    Elem< ExampleRing > constexpr a { 3 };
+    CyclicRing< TestRingTraits > constexpr a { 3 };
     REQUIRE( a * a.inverse() == one );
   }
 
   SECTION( "division is multiplication with multiplicative inverse" ) {
-    Elem< ExampleRing > constexpr twenty_seven { 27 };
-    Elem< ExampleRing > constexpr three { 3 };
-    Elem< ExampleRing > constexpr nine { 9 };
+    CyclicRing< TestRingTraits > constexpr twenty_seven { 27 };
+    CyclicRing< TestRingTraits > constexpr three { 3 };
+    CyclicRing< TestRingTraits > constexpr nine { 9 };
     REQUIRE( twenty_seven / three == nine );
     REQUIRE( twenty_seven / three == twenty_seven * three.inverse() );
   }
 
   SECTION( "negative exponent is multiplied with multiplicative inverse" ) {
-    Elem< ExampleRing > constexpr a { 3 };
+    CyclicRing< TestRingTraits > constexpr a { 3 };
     REQUIRE( a.pow( -1 ) == a.inverse() );
-    REQUIRE( a.pow( -2 ) == Elem< ExampleRing >{ 9 }.inverse() );
+    REQUIRE( a.pow( -2 ) == CyclicRing< TestRingTraits >{ 9 }.inverse() );
   }
 }
