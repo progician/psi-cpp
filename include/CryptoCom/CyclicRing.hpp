@@ -3,6 +3,7 @@
 #include <cmath>
 #include <CryptoCom/Eucledian.hpp>
 #include <iostream>
+#include <type_traits>
 
 namespace CryptoCom {
 
@@ -19,16 +20,24 @@ namespace CryptoCom {
       constexpr CyclicRing()
         : ordinalIndex_( Traits::AdditiveIdentity ) {}
 
-      static CyclicRing< Traits > constexpr zero() {
+      static CyclicRing< Traits > constexpr Zero() {
         return CyclicRing< Traits > { Traits::AdditiveIdentity };
       }
 
-      static CyclicRing< Traits > constexpr one() {
+      static CyclicRing< Traits > constexpr One() {
         return CyclicRing< Traits > { Traits::MultiplicativeIdentity };
+      }
+
+      static CyclicRing< Traits > constexpr Generator() {
+        return CyclicRing< Traits > { Traits::Generator };
       }
 
       bool operator ==( CyclicRing const& other ) const {
         return ordinalIndex_ == other.ordinalIndex_;
+      }
+
+      bool operator <( CyclicRing const other ) const {
+        return ordinalIndex_ < other.ordinalIndex_;
       }
 
 
@@ -59,12 +68,15 @@ namespace CryptoCom {
       }
 
       template< typename IntegralType >
-        CyclicRing< Traits > pow( IntegralType exponent ) const {
+        typename std::enable_if<
+            std::is_signed< IntegralType >::value,
+            CyclicRing< Traits >
+        >::type pow( IntegralType exponent ) const {
           if ( exponent < 0 )
             return pow( std::abs( exponent ) ).inverse();
 
           if ( exponent == 0 )
-            return CyclicRing< Traits >::one();
+            return CyclicRing< Traits >::One();
 
           if ( ( exponent % 2 ) == 1 )
             return *this * pow( exponent - 1 );
@@ -73,6 +85,38 @@ namespace CryptoCom {
           return base * base;
         }
 
+      
+      template< typename IntegralType >
+        typename std::enable_if<
+            !std::is_signed< IntegralType >::value,
+            CyclicRing< Traits >
+        >::type pow( IntegralType exponent ) const {
+          if ( exponent == 0 )
+            return CyclicRing< Traits >::One();
+
+          if ( ( exponent % 2 ) == 1 )
+            return *this * pow( exponent - 1 );
+
+          auto const base { pow( exponent >> 1 ) };
+          return base * base;
+        }
+
+
+      template< typename IntegralType >
+        CyclicRing< Traits > operator^( IntegralType exponent ) const {
+          return pow( exponent );
+        }
+
+
+      template< typename IntegralType >
+        CyclicRing< Traits > operator%( IntegralType modulo ) const {
+          return ordinalIndex_ % modulo;
+        }
+
+      template< typename IntegralType >
+        CyclicRing< Traits > operator>>( IntegralType value ) const {
+          return ordinalIndex_ >> value;
+        }
 
       CyclicRing< Traits > inverse() const {
         return CyclicRing< Traits > {
@@ -87,5 +131,12 @@ namespace CryptoCom {
       friend std::ostream& operator<<(
           std::ostream&, CyclicRing< Traits > const& );
     };
-
 } // CryptoCom
+
+
+namespace std {
+  template< typename Traits >
+    struct is_signed< CryptoCom::CyclicRing< Traits > >
+      : public std::false_type {};
+} // std
+

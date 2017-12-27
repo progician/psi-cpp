@@ -23,23 +23,23 @@ namespace CryptoCom {
 
 
 TEST_CASE( "In cyclic rings" ) {
-  CryptoCom::CyclicRing< TestRingTraits > constexpr zero;
-  auto constexpr one = CryptoCom::CyclicRing< TestRingTraits >::one();
+  CryptoCom::CyclicRing< TestRingTraits > constexpr Zero;
+  auto constexpr one = CryptoCom::CyclicRing< TestRingTraits >::One();
 
   SECTION( "uninitialized element is additive identity" ) {
     CryptoCom::CyclicRing< TestRingTraits > constexpr a { 3 };
-    REQUIRE( ( a + zero ) == a );
+    REQUIRE( ( a + Zero ) == a );
   }
 
   SECTION( "adding element and its additive inverse is additive identity" ) {
     CryptoCom::CyclicRing< TestRingTraits > constexpr a { 3 };
     auto const b = -a;
-    REQUIRE( a + b == zero );
+    REQUIRE( a + b == Zero );
   } 
 
   SECTION( "subtraction is adding additive inverse" ) {
     CryptoCom::CyclicRing< TestRingTraits > constexpr a { 3 };
-    REQUIRE( a - a == zero );
+    REQUIRE( a - a == Zero );
   }
 
   SECTION( "multiplying with multiplicative identity" ) {
@@ -70,5 +70,10 @@ TEST_CASE( "In cyclic rings" ) {
     CryptoCom::CyclicRing< TestRingTraits > constexpr a { 3 };
     REQUIRE( a.pow( -1 ) == a.inverse() );
     REQUIRE( a.pow( -2 ) == CryptoCom::CyclicRing< TestRingTraits >{ 9 }.inverse() );
+  }
+
+  SECTION( "operator ^ is power" ) {
+    CryptoCom::CyclicRing< TestRingTraits > constexpr three { 3 };
+    REQUIRE( ( three ^ 2 ) == 9 );
   }
 }

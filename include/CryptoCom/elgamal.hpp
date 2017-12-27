@@ -1,35 +1,62 @@
 #pragma once
 
-#include <CryptoCom/finite-group.hpp>
-#include <boost/operators.hpp>
+#include <CryptoCom/CyclicRing.hpp>
+#include <functional>
+
+namespace CryptoCom {
+
+  template< typename RingTraits >
+    struct ElGamal {
+      using Ring = CyclicRing< RingTraits >;
+      using RNG = std::function< Ring() >;
+
+      struct Cipher {
+        Ring const c[ 2 ];
+
+        Cipher() = delete;
+        Cipher( Ring const& c1, Ring const& c2, Ring const& k );
+
+        Cipher operator +( Cipher const& other ) {
+          return Cipher {
+            c[ 0 ] * other.c[ 1 ],
+            c[ 1 ] * other.c[ 2 ] };
+        }
+
+        Cipher operator +( Ring const& other ) {
+          return Cipher {
+            c[ 0 ],
+            c[ 1 ] * Ring { RingTraits::Generator }.pow( other ) };
+        }
+
+        Cipher operator *( Ring const& other ) {
+          return {
+            c[ 0 ].pow( other ),
+            c[ 1 ].pow( other ) };
+        }
+      };
 
 
-namespace ElGamal {
-
-  struct Cipher
-  : public boost::addable< Cipher, Cipher >
-  , public boost::addable< Cipher, fg::Elem >
-  , public boost::multipliable< Cipher, fg::Elem >
-  {
-    fg::Elem c[ 2 ];
-    fg::Elem key;
-
-    Cipher() = delete;
-    Cipher( fg::Elem const& c1, fg::Elem const& c2, fg::Elem const& k );
-
-    Cipher& operator +=( Cipher const& other );
-    Cipher& operator +=( fg::Elem const& other );
-    Cipher& operator *=( fg::Elem const& other );
-  };
+      static std::tuple< Ring, Ring >
+      newKeyPair( std::function< Ring() > rng ) {
+        auto const secret = rng();
+        return std::make_tuple( secret, Ring::Generator().pow( secret ) );
+      }
 
 
-  std::tuple< fg::Elem, fg::Elem >
-  keygen( fg::Group const& cryptoGroup );
+      static Cipher
+      encrypt( Ring const& key, Ring const& plainText, RNG rng ) {
+        auto const a = key.pow( rng() );
+        auto const b = Ring::Generator().pow( plainText );
+        return Cipher {
+          Ring::Generator().pow( random ),
+          a * b };
+      }
 
-  Cipher
-  encrypt( fg::Elem const& key, int64_t const plainMessage );
 
-  fg::Elem
-  decrypt( fg::Elem const& key, Cipher const& encryptedMessage );
+      static Ring decrypt( Ring const& key, Cipher const& encryptedMessage ) {
+        auto const sharedSecret = encryptedMessage.c[ 0 ] ^ key;
+        return encryptedMessage.c[ 1 ] / sharedSecret;
+      }
+    };
 
-} // End of namespace 'ElGamal'
+} // End of namespace 'CryptoCom'
