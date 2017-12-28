@@ -14,7 +14,8 @@ namespace CryptoCom {
         Ring const c[ 2 ];
 
         Cipher() = delete;
-        Cipher( Ring const& c1, Ring const& c2, Ring const& k );
+        Cipher( Ring const& c1, Ring const& c2 )
+          : c { c1, c2 } {}
 
         Cipher operator +( Cipher const& other ) {
           return Cipher {
@@ -45,9 +46,10 @@ namespace CryptoCom {
 
       static Cipher
       encrypt( Ring const& key, Ring const& plainText, RNG rng ) {
-        auto const a = key.pow( rng() );
+        auto const random = rng();
+        auto const a = key.pow( random );
         auto const b = Ring::Generator().pow( plainText );
-        return Cipher {
+        return Cipher{
           Ring::Generator().pow( random ),
           a * b };
       }
