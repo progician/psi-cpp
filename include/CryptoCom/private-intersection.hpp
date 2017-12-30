@@ -13,12 +13,12 @@ namespace CryptoCom {
     struct PrivateIntersection {
       using Ring = CyclicRing< RingTraits >;
       using EncryptionSystem = ElGamal< RingTraits >;
-      using CipherType = typename EncryptionSystem::Cipher;
+      using Cipher = typename EncryptionSystem::Cipher;
       using RNG = typename EncryptionSystem::RNG;
 
       template< typename InputIt >
-        static std::vector< CipherType >
-        encryptedPolynomial(
+        static std::vector< Cipher >
+        EncryptedPolynomial(
             InputIt first, InputIt last,
             Ring const& publicKey,
             RNG rng ) {
@@ -27,7 +27,7 @@ namespace CryptoCom {
               typename InputIt::value_type( -1 ),
               typename InputIt::value_type(  1 ) );
 
-          std::vector< CipherType > result;
+          std::vector< Cipher > result;
           for ( auto const& coeff : polynomial ) {
             result.push_back(
                 EncryptionSystem::encrypt( publicKey, coeff, rng ) );
@@ -38,12 +38,12 @@ namespace CryptoCom {
 
 
       template< typename InputIt >
-        static std::vector< CipherType >
-        obliviousEvaluation(
+        static std::vector< Cipher >
+        ObliviousEvaluation(
             InputIt first, InputIt last,
-            std::vector< CipherType > const& encryptedPolynomial,
+            std::vector< Cipher > const& encryptedPolynomial,
             RNG rng ) {
-          std::vector< CipherType > result;
+          std::vector< Cipher > result;
           for ( auto current = first; current != last; ++current ) {
             auto const c = cryptoGroup( *current );
             auto const evaluated = poly::eval( c, encryptedPolynomial.begin(), encryptedPolynomial.end() );
@@ -57,9 +57,9 @@ namespace CryptoCom {
       template< typename InputType,
                 typename InputIt >
         static std::set< InputType >
-        extractIntersection(
+        ExtractIntersection(
             InputIt first, InputIt last,
-            std::vector< CipherType > const& evaluatedElements,
+            std::vector< Cipher > const& evaluatedElements,
             Ring const& privateKey ) {
 
           std::vector< Ring > normalized(

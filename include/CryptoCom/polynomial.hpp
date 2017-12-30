@@ -1,54 +1,80 @@
 #pragma once
 
-#include <boost/assert.hpp>
 #include <CryptoCom/finite-group.hpp>
+#include <initializer_list>
 #include <iterator>
 #include <vector>
 
-namespace poly {
-
-  template< typename VariableType, typename PolynomialIt >
-    typename PolynomialIt::value_type
-    eval( VariableType const& x, PolynomialIt first, PolynomialIt last )
-    {
-      BOOST_ASSERT( first != last );
-
-      if ( std::next( first ) == last )
-        return *first;
-
-      return *first + eval( x, std::next( first ), last ) * x;
-    }
-
+namespace CryptoCom {
 
   template< typename CoefficientType >
-    std::vector< CoefficientType >
-    mul( std::vector< CoefficientType > const& a,
-         std::vector< CoefficientType > const& b,
-         CoefficientType zero )
-    {
-      std::vector< CoefficientType > result( a.size() + b.size() - 1, zero );
-      for ( size_t aIndex = 0; aIndex < a.size(); ++aIndex ) {
-        for ( size_t bIndex = 0; bIndex < b.size(); ++bIndex ) {
-          result[ aIndex + bIndex ] += a[ aIndex ] * b[ bIndex ];
+    class Polynomial {
+      std::vector< CoefficientType  > coefficients_;
+    public:
+
+      Polynomial() = default;
+      Polynomial( std::initializer_list< CoefficientType > l )
+        : coefficients_( l ) {}
+
+      template< typename VariableType >
+        CoefficientType operator()( VariableType const& x ) const {
+          VariableType result { coefficients_[ coefficients_.size() - 1 ] };
+          for ( size_t idx = 1; idx < coefficients_.size(); idx++ ) {
+            result = result * x + coefficients_[ coefficients_.size() - 1 - idx ];
+          }
+          return result;
         }
+
+
+      Polynomial< CoefficientType >
+      operator *( Polynomial< CoefficientType > const& other ) const {
+        Polynomial res;
+        res.coefficients_.resize(
+            coefficients_.size() + other.coefficients_.size() - 1,
+            CoefficientType{} );
+        for ( size_t i = 0; i < coefficients_.size(); i++ ) {
+          for ( size_t j = 0; j < other.coefficients_.size(); j++ ) {
+            res[ i + j ] += coefficients_[ i ] * other.coefficients_[ j ];
+          }
+        }
+
+        return res;
       }
 
-      return result;
-    }
+
+      CoefficientType&
+      operator[]( size_t idx ) { return coefficients_[ idx ]; }
+      
+      CoefficientType
+      operator[]( size_t idx ) const { return coefficients_[ idx ]; }
+
+      size_t size() const { return coefficients_.size(); }
 
 
-  template< typename CoefficientType,
-            typename RootIt >
-    std::vector< CoefficientType >
-    fromRoots( RootIt first, RootIt last, CoefficientType minusOne, CoefficientType plusOne )
-    {
-      const CoefficientType zero = minusOne + plusOne;
-      std::vector< CoefficientType > polynomial = { minusOne * (*first), plusOne };
-      for ( RootIt current = std::next( first ); current != last; ++current ) {
-        auto const root = *current;
-        polynomial = mul( polynomial, { minusOne * root, plusOne }, zero );
+      bool operator==( Polynomial< CoefficientType > const& other ) const {
+        if ( coefficients_.size() != other.coefficients_.size() )
+          return false;
+        return std::equal(
+            coefficients_.begin(), coefficients_.end(),
+            other.coefficients_.begin() );
       }
 
-      return polynomial;
-    }
+
+      template< typename RootIt >
+        static Polynomial< CoefficientType >
+        fromRoots(
+            RootIt first, RootIt last,
+            CoefficientType const minusOne = -1,
+            CoefficientType const plusOne = 1 ) {
+          Polynomial< CoefficientType > polynomial { minusOne * (*first), plusOne };
+          for ( auto current = std::next( first ); current != last; ++current ) {
+            auto const root = *current;
+            polynomial = polynomial * Polynomial< CoefficientType >{ minusOne * root, plusOne };
+          }
+
+          return polynomial;
+        }
+      friend std::ostream& operator<<( std::ostream&, Polynomial< CoefficientType > const& );
+    };
+
 } // End of namespace 'poly'
