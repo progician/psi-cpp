@@ -1,4 +1,4 @@
-#include <CryptoCom/elgamal.hpp>
+#include <CryptoCom/ElGamal.hpp>
 #include <catch/catch.hpp>
 #include <list>
 
