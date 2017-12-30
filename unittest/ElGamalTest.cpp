@@ -26,7 +26,9 @@ namespace CryptoCom {
 
 
 CryptoCom::ElGamal< RingTraits >::Cipher
-multiply( CryptoCom::ElGamal< RingTraits >::Cipher a, CryptoCom::ElGamal< RingTraits >::Cipher b ) {
+Multiply(
+    CryptoCom::ElGamal< RingTraits >::Cipher a,
+    CryptoCom::ElGamal< RingTraits >::Cipher b ) {
   return std::make_tuple(
       std::get< 0 >( a ) * std::get< 0 >( b ),
       std::get< 1 >( a ) * std::get< 1 >( b ) );
@@ -39,7 +41,7 @@ TEST_CASE( "Exponential ElGamal encryption scheme" ) {
 
 
   SECTION( "with a valid encryption key pair" ) {
-    auto const keyPair = EncryptionScheme::newKeyPair(
+    auto const keyPair = EncryptionScheme::KeyPairOf(
         []() { return Ring { 5 }; } );
     auto const privateKey = std::get< 0 >( keyPair );
     auto const publicKey = std::get< 1 >( keyPair );
@@ -48,7 +50,7 @@ TEST_CASE( "Exponential ElGamal encryption scheme" ) {
 
 
     SECTION( "encrypting done by an external (random) number results in a valid cipher" ) {
-      auto const cipher = EncryptionScheme::encrypt(
+      auto const cipher = EncryptionScheme::Encrypt(
           publicKey, Ring { 2 },
           []() { return Ring { 3 }; } );
       REQUIRE( cipher == std::make_tuple( Ring{ 8 }, Ring{ 284 } ) );
@@ -56,7 +58,7 @@ TEST_CASE( "Exponential ElGamal encryption scheme" ) {
 
 
     SECTION( "decrypting done by using the complementary key and a valid cipher" ) {
-      auto const plainText = EncryptionScheme::decrypt(
+      auto const plainText = EncryptionScheme::Decrypt(
           privateKey,
           EncryptionScheme::Cipher{
             Ring{ 8 }, Ring{ 284 } } );
@@ -78,11 +80,11 @@ TEST_CASE( "Exponential ElGamal encryption scheme" ) {
         return res;
       };
 
-      auto const encryptedEight = EncryptionScheme::encrypt( publicKey, eight, sequenceFunction );
-      auto const encryptedTwelve = EncryptionScheme::encrypt( publicKey, twelve, sequenceFunction );
-      auto const encryptedNinetySix = EncryptionScheme::encrypt( publicKey, ninetySix, sequenceFunction );
+      auto const encryptedEight = EncryptionScheme::Encrypt( publicKey, eight, sequenceFunction );
+      auto const encryptedTwelve = EncryptionScheme::Encrypt( publicKey, twelve, sequenceFunction );
+      auto const encryptedNinetySix = EncryptionScheme::Encrypt( publicKey, ninetySix, sequenceFunction );
 
-      REQUIRE( multiply( encryptedEight, encryptedTwelve ) == encryptedNinetySix );
+      REQUIRE( Multiply( encryptedEight, encryptedTwelve ) == encryptedNinetySix );
     }
   }
 }

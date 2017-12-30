@@ -14,7 +14,7 @@ namespace CryptoCom {
 
 
       static std::tuple< Ring, Ring >
-      newKeyPair( std::function< Ring() > rng ) {
+      KeyPairOf( std::function< Ring() > rng ) {
         auto const secret = rng();
         return std::make_tuple(
             secret,
@@ -23,7 +23,7 @@ namespace CryptoCom {
 
 
       static Cipher
-      encrypt( Ring const& key, Ring const& plainText, RNG rng ) {
+      Encrypt( Ring const& key, Ring const& plainText, RNG rng ) {
         auto const random = rng();
         return Cipher{
           Ring::Generator() ^ random,
@@ -31,7 +31,8 @@ namespace CryptoCom {
       }
 
 
-      static Ring decrypt( Ring const& key, Cipher const& encryptedMessage ) {
+      static Ring
+      Decrypt( Ring const& key, Cipher const& encryptedMessage ) {
         auto const sharedSecret = std::get< 0 >( encryptedMessage ) ^ key;
         return std::get< 1 >( encryptedMessage ) / sharedSecret;
       }
