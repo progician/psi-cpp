@@ -6,26 +6,30 @@
 
 namespace CryptoCom {
 
-  template< typename T >
-    std::tuple< T, T, T> ExtendedGCD( T a, T b ) {
+  template< typename T, typename CoefficientType >
+    std::tuple< T, CoefficientType, CoefficientType > ExtendedGCD( T a, T b ) {
       if ( a == 0 )
         return std::make_tuple( b, 0, 1 );
       
-      T g, x, y;
-      std::tie( g, x, y ) = ExtendedGCD( b % a, a );
-      return std::make_tuple( g, y - ( ( b / a ) * x ), x );
+      T g;
+      CoefficientType x, y;
+      std::tie( g, x, y ) = ExtendedGCD< T, CoefficientType >( b % a, a );
+      auto const s = y - ( CoefficientType( b ) / CoefficientType( a ) ) * x;
+      return std::make_tuple( g, s, x );
     }
 
-  template< typename T >
+
+  template< typename T, typename CoefficientType >
     T InverseModulo( T const a, T const b ) {
-      T g, x;
-      std::tie( g, x, std::ignore ) = ExtendedGCD( a, b );
+      T g;
+      CoefficientType x;
+      std::tie( g, x, std::ignore ) = ExtendedGCD< T, CoefficientType >( a, b );
 
       if ( g == 1 ) {
         if ( x < 0 )
-          return b + x;
+          return T( b + x );
 
-        return std::abs( x ) % b;
+        return T( std::abs( x ) ) % b;
       }
 
       throw std::invalid_argument( "relative primes have no inverse modulo" );

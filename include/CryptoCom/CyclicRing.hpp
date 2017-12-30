@@ -120,7 +120,7 @@ namespace CryptoCom {
 
       CyclicRing< Traits > inverse() const {
         return CyclicRing< Traits > {
-          InverseModulo( ordinalIndex_, Traits::Order ) };
+          InverseModulo< typename Traits::PrimaryType, typename Traits::CoefficientType >( ordinalIndex_, Traits::Order ) };
       }
 
       CyclicRing< Traits >

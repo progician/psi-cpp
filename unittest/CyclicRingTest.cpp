@@ -5,6 +5,8 @@
 struct TestRingTraits {
   using PrimaryType = int32_t;
   using EscalationType = int64_t;
+  using CoefficientType = int32_t;
+
   static constexpr PrimaryType Order = 0x800000;
   static constexpr PrimaryType Generator = 2;
   static constexpr PrimaryType AdditiveIdentity = 0;

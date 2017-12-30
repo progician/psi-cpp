@@ -1,10 +1,13 @@
 #include <CryptoCom/elgamal.hpp>
 #include <catch/catch.hpp>
+#include <list>
 
 struct RingTraits {
   using PrimaryType = int32_t;
   using EscalationType = int64_t;
-  static constexpr PrimaryType Order = 0x800000;
+  using CoefficientType = int64_t;
+
+  static constexpr PrimaryType Order = 1483;
   static constexpr PrimaryType Generator = 2;
   static constexpr PrimaryType AdditiveIdentity = 0;
   static constexpr PrimaryType MultiplicativeIdentity = 1;
@@ -12,6 +15,7 @@ struct RingTraits {
 
 
 namespace CryptoCom {
+
   std::ostream&
   operator <<( std::ostream& ostr, CyclicRing< RingTraits > const& e ) {
     ostr << e.ordinalIndex_;
@@ -21,24 +25,64 @@ namespace CryptoCom {
 } // CryptoCom
 
 
-TEST_CASE( "Exponential EGamal encryption scheme" ) {
+CryptoCom::ElGamal< RingTraits >::Cipher
+multiply( CryptoCom::ElGamal< RingTraits >::Cipher a, CryptoCom::ElGamal< RingTraits >::Cipher b ) {
+  return std::make_tuple(
+      std::get< 0 >( a ) * std::get< 0 >( b ),
+      std::get< 1 >( a ) * std::get< 1 >( b ) );
+}
+
+
+TEST_CASE( "Exponential ElGamal encryption scheme" ) {
   using Ring = CryptoCom::CyclicRing< RingTraits >;
   using EncryptionScheme = CryptoCom::ElGamal< RingTraits >;
 
 
-  SECTION( "generating encryption key pair" ) {
+  SECTION( "with a valid encryption key pair" ) {
     auto const keyPair = EncryptionScheme::newKeyPair(
-        []() { return Ring { 1 }; } );
-    REQUIRE( std::get< 0 >( keyPair ) == Ring { 1 } );
-    REQUIRE( std::get< 1 >( keyPair ) == Ring { 2 } );
-  }
+        []() { return Ring { 5 }; } );
+    auto const privateKey = std::get< 0 >( keyPair );
+    auto const publicKey = std::get< 1 >( keyPair );
+    REQUIRE( privateKey == Ring { 5 } );
+    REQUIRE( publicKey == Ring { 32 } );
 
 
-  SECTION( "encrypting done by an external (random ) number results in a valid cipher" ) {
-    auto const cipher = EncryptionScheme::encrypt(
-        Ring { 1 }, Ring { 2 },
-        []() { return Ring { 2 }; } );
-    REQUIRE( cipher.c[ 0 ] == Ring { 4 } );
-    REQUIRE( cipher.c[ 1 ] == Ring { 4 } );
+    SECTION( "encrypting done by an external (random) number results in a valid cipher" ) {
+      auto const cipher = EncryptionScheme::encrypt(
+          publicKey, Ring { 2 },
+          []() { return Ring { 3 }; } );
+      REQUIRE( cipher == std::make_tuple( Ring{ 8 }, Ring{ 284 } ) );
+    }
+
+
+    SECTION( "decrypting done by using the complementary key and a valid cipher" ) {
+      auto const plainText = EncryptionScheme::decrypt(
+          privateKey,
+          EncryptionScheme::Cipher{
+            Ring{ 8 }, Ring{ 284 } } );
+      REQUIRE( plainText == Ring{ 2 } );
+    }
+
+
+    SECTION( "encryption is homomorphic to multiplication" ) {
+      Ring constexpr eight { 8 };
+      Ring constexpr twelve { 12 };
+      Ring constexpr ninetySix { 96 };
+
+      std::list< Ring > additiveSequence = {
+        Ring{ 3 }, Ring{ 6 }, Ring{ 9 } };
+
+      EncryptionScheme::RNG sequenceFunction = [&additiveSequence]() {
+        auto res = additiveSequence.front();
+        additiveSequence.pop_front();
+        return res;
+      };
+
+      auto const encryptedEight = EncryptionScheme::encrypt( publicKey, eight, sequenceFunction );
+      auto const encryptedTwelve = EncryptionScheme::encrypt( publicKey, twelve, sequenceFunction );
+      auto const encryptedNinetySix = EncryptionScheme::encrypt( publicKey, ninetySix, sequenceFunction );
+
+      REQUIRE( multiply( encryptedEight, encryptedTwelve ) == encryptedNinetySix );
+    }
   }
 }
