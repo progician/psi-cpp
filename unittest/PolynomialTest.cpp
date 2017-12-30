@@ -1,4 +1,4 @@
-#include <CryptoCom/polynomial.hpp>
+#include <CryptoCom/Polynomial.hpp>
 #include <catch/catch.hpp>
 
 namespace CryptoCom {
