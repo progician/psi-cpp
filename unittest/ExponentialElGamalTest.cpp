@@ -1,9 +1,9 @@
-#include <CryptoCom/ElGamal.hpp>
+#include <CryptoCom/ExponentialElGamal.hpp>
 #include <catch/catch.hpp>
 #include <list>
 
-namespace {
 
+namespace {
   struct RingTraits {
     using PrimaryType = int32_t;
     using EscalationType = int64_t;
@@ -14,8 +14,7 @@ namespace {
     static constexpr PrimaryType AdditiveIdentity = 0;
     static constexpr PrimaryType MultiplicativeIdentity = 1;
   };
-
-} // anonymous
+}
 
 
 namespace CryptoCom {
@@ -26,22 +25,23 @@ namespace CryptoCom {
     return ostr;
   }
 
+
+  std::ostream&
+  operator <<( std::ostream& ostr, ExponentialElGamal< RingTraits >::Cipher const& c ) {
+    ostr << "("
+         << std::get< 0 >( c.components )
+         << ", "
+         << std::get< 1 >( c.components )
+         << ")";
+    return ostr;
+  }
+
 } // CryptoCom
 
 
-CryptoCom::ElGamal< RingTraits >::Cipher
-Multiply(
-    CryptoCom::ElGamal< RingTraits >::Cipher a,
-    CryptoCom::ElGamal< RingTraits >::Cipher b ) {
-  return std::make_tuple(
-      std::get< 0 >( a ) * std::get< 0 >( b ),
-      std::get< 1 >( a ) * std::get< 1 >( b ) );
-}
-
-
-TEST_CASE( "ElGamal encryption scheme" ) {
+TEST_CASE( "Exponential ElGamal encryption scheme" ) {
   using Ring = CryptoCom::CyclicRing< RingTraits >;
-  using EncryptionScheme = CryptoCom::ElGamal< RingTraits >;
+  using EncryptionScheme = CryptoCom::ExponentialElGamal< RingTraits >;
 
 
   SECTION( "with a valid encryption key pair" ) {
@@ -57,7 +57,7 @@ TEST_CASE( "ElGamal encryption scheme" ) {
       auto const cipher = EncryptionScheme::Encrypt(
           publicKey, Ring { 2 },
           []() { return Ring { 3 }; } );
-      REQUIRE( cipher == std::make_tuple( Ring{ 8 }, Ring{ 284 } ) );
+      REQUIRE( cipher == std::make_tuple( Ring{ 8 }, Ring{ 568 } ) );
     }
 
 
@@ -65,18 +65,17 @@ TEST_CASE( "ElGamal encryption scheme" ) {
       auto const plainText = EncryptionScheme::Decrypt(
           privateKey,
           EncryptionScheme::Cipher{
-            Ring{ 8 }, Ring{ 284 } } );
-      REQUIRE( plainText == Ring{ 2 } );
+            Ring{ 8 }, Ring{ 568 } } );
+      REQUIRE( plainText == Ring{ 4 } );
     }
 
 
-    SECTION( "encryption is homomorphic to multiplication" ) {
+    SECTION( "encryption is homomorphic to" ) {
       Ring constexpr eight { 8 };
       Ring constexpr twelve { 12 };
-      Ring constexpr ninetySix { 96 };
+      Ring constexpr twenty { 20 };
 
-      std::list< Ring > additiveSequence = {
-        Ring{ 3 }, Ring{ 6 }, Ring{ 9 } };
+      std::list< Ring > additiveSequence = { Ring{ 3 }, Ring{ 6 } };
 
       EncryptionScheme::RNG sequenceFunction = [&additiveSequence]() {
         auto res = additiveSequence.front();
@@ -86,9 +85,18 @@ TEST_CASE( "ElGamal encryption scheme" ) {
 
       auto const encryptedEight = EncryptionScheme::Encrypt( publicKey, eight, sequenceFunction );
       auto const encryptedTwelve = EncryptionScheme::Encrypt( publicKey, twelve, sequenceFunction );
-      auto const encryptedNinetySix = EncryptionScheme::Encrypt( publicKey, ninetySix, sequenceFunction );
 
-      REQUIRE( Multiply( encryptedEight, encryptedTwelve ) == encryptedNinetySix );
+      SECTION( "adding to other cipher with adding the random 'salts' together" ) {
+        additiveSequence = std::list< Ring >{ Ring{ 9 } };
+        auto const encryptedTwenty = EncryptionScheme::Encrypt( publicKey, twenty, sequenceFunction );
+        REQUIRE( encryptedEight + encryptedTwelve == encryptedTwenty );
+      }
+
+      SECTION( "adding to plaintext with keeping the random salt the same" ) {
+        additiveSequence = std::list< Ring >{ Ring{ 3 } };
+        auto const encryptedTwenty = EncryptionScheme::Encrypt( publicKey, twenty, sequenceFunction );
+        REQUIRE( encryptedEight + twelve == encryptedTwenty );
+      }
     }
   }
 }

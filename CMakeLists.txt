@@ -20,6 +20,7 @@ target_link_libraries( CryptoCom INTERFACE Boost::boost )
 add_executable( UnitTests
   unittest/CyclicRingTest.cpp
   unittest/ElGamalTest.cpp
+  unittest/ExponentialElGamalTest.cpp
   unittest/PolynomialTest.cpp
   unittest/UnitTestMain.cpp )
 
