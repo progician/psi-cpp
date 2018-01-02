@@ -1,6 +1,5 @@
 #pragma once
 
-#include <CryptoCom/finite-group.hpp>
 #include <initializer_list>
 #include <iterator>
 #include <vector>
@@ -15,6 +14,8 @@ namespace CryptoCom {
       Polynomial() = default;
       Polynomial( std::initializer_list< CoefficientType > l )
         : coefficients_( l ) {}
+      Polynomial( std::vector< CoefficientType >&& coeffs )
+        : coefficients_( coeffs ) {}
 
       template< typename VariableType >
         CoefficientType operator()( VariableType const& x ) const {
@@ -50,6 +51,18 @@ namespace CryptoCom {
 
       size_t size() const { return coefficients_.size(); }
 
+
+      typename std::vector< CoefficientType >::iterator begin()
+      { return coefficients_.begin(); }
+
+      typename std::vector< CoefficientType >::const_iterator cbegin() const
+      { return coefficients_.cbegin(); }
+
+      typename std::vector< CoefficientType >::iterator end()
+      { return coefficients_.end(); }
+
+      typename std::vector< CoefficientType >::const_iterator cend() const
+      { return coefficients_.cend(); }
 
       bool operator==( Polynomial< CoefficientType > const& other ) const {
         if ( coefficients_.size() != other.coefficients_.size() )
