@@ -29,7 +29,7 @@ namespace CryptoCom {
         if ( x < 0 )
           return T( b + x );
 
-        return T( std::abs( x ) ) % b;
+        return T( x ) % b;
       }
 
       throw std::invalid_argument( "relative primes have no inverse modulo" );

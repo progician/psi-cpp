@@ -9,7 +9,7 @@ namespace CryptoCom {
 
   template< typename Traits >
     class CyclicRing {
-      typename Traits::PrimaryType const ordinalIndex_;
+      typename Traits::PrimaryType ordinalIndex_;
 
     public:
       constexpr CyclicRing( typename Traits::PrimaryType const ordinalIndex )
@@ -46,6 +46,12 @@ namespace CryptoCom {
         return CyclicRing< Traits > {
           ( ordinalIndex_ + other.ordinalIndex_ ) % Traits::Order
         };
+      }
+
+      CyclicRing< Traits >&
+      operator+=( CyclicRing< Traits > const& other ) {
+        ordinalIndex_ = ( ordinalIndex_ + other.ordinalIndex_ ) % Traits::Order;
+        return *this;
       }
 
       CyclicRing< Traits > operator-() const {

@@ -35,7 +35,8 @@ namespace CryptoCom {
             CoefficientType{} );
         for ( size_t i = 0; i < coefficients_.size(); i++ ) {
           for ( size_t j = 0; j < other.coefficients_.size(); j++ ) {
-            res[ i + j ] += coefficients_[ i ] * other.coefficients_[ j ];
+            auto const r = 
+              res[ i + j ] += coefficients_[ i ] * other.coefficients_[ j ];
           }
         }
 

@@ -21,6 +21,7 @@ add_executable( UnitTests
   unittest/CyclicRingTest.cpp
   unittest/ElGamalTest.cpp
   unittest/ExponentialElGamalTest.cpp
+  unittest/ObliviousEvaluationTest.cpp
   unittest/PolynomialTest.cpp
   unittest/UnitTestMain.cpp )
 

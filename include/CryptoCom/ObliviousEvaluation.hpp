@@ -4,8 +4,9 @@
 #include <CryptoCom/ExponentialElGamal.hpp>
 #include <CryptoCom/Polynomial.hpp>
 
-#include <set>
 #include <algorithm>
+#include <map>
+#include <set>
 
 namespace CryptoCom {
 
@@ -23,16 +24,16 @@ namespace CryptoCom {
             Ring const& publicKey,
             RNG rng ) {
 
-          auto const inputPolynomial = poly::fromRoots(
+          auto const inputPolynomial = Polynomial< Ring >::fromRoots(
               localSet.cbegin(), localSet.cend() );
 
           std::vector< Cipher > encryptedCoefficients;
           std::transform(
               inputPolynomial.cbegin(), inputPolynomial.cend(),
-              std::back_inserter( result ),
-              std::bind( EncrytpionSystem::encrypt,
+              std::back_inserter( encryptedCoefficients ),
+              std::bind( EncryptionSystem::Encrypt,
                 publicKey,
-                std::placeholder::_1,
+                std::placeholders::_1,
                 rng ) );
           return Polynomial< Cipher >( std::move( encryptedCoefficients ) );
         }
@@ -45,9 +46,9 @@ namespace CryptoCom {
             Polynomial<  Cipher > const& encryptedPolynomial,
             RNG rng ) {
           std::vector< Cipher > result;
-          for ( auto current = first; current != last; ++current ) {
-            auto const c = cryptoroup( *current );
-            auto const evaluated = poly::eval( c, encryptedPolynomial.begin(), encryptedPolynomial.end() );
+          for ( auto const localElem : localSet ) {
+            auto const c = cryptoroup( localElem );
+            auto const evaluated = encryptedPolynomial( c );
             result.push_back( evaluated * rng() + c );
           }
 
@@ -56,7 +57,7 @@ namespace CryptoCom {
 
 
       template< typename InputType >
-        static std::set< typename InputType >
+        static typename std::set< InputType >
         ExtractIntersection(
             std::set< InputType > localSet,
             std::vector< Cipher > const& evaluatedElements,
@@ -68,15 +69,12 @@ namespace CryptoCom {
           }
 
           std::set< InputType > results;
-          std::transform(
-              evaluatedElements.cbegin(), evaluatedElements.cend(),
-              std::inserter( results, results.begin() ),
-              []( Cipher const& e ) {
-                auto const decryptedElem = EncryptionSystem::decrypt( privateKey, e );
-                auto const it = searchSet.find( decryptedElem );
-                if ( it != normalized.end() )
-                  results.insert( it->second );
-              } );
+          for( auto const& e : evaluatedElements ) {
+            auto const decryptedElem = EncryptionSystem::decrypt( privateKey, e );
+            auto const it = searchSet.find( decryptedElem );
+            if ( it != searchSet.end() )
+              results.insert( it->second );
+          }
 
           return results;
         }
