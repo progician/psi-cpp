@@ -5,13 +5,11 @@ set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 set( CMAKE_CXX_EXTENSIONS OFF )
 
-find_package( Boost REQUIRED )
 
 #===-----------------------------------------------------------------------===
 # CryptoCom library
 add_library( CryptoCom INTERFACE )
 target_include_directories( CryptoCom INTERFACE include )
-target_link_libraries( CryptoCom INTERFACE Boost::boost )
 
 
 #===-----------------------------------------------------------------------===
@@ -27,6 +25,8 @@ add_executable( UnitTests
 target_include_directories( UnitTests PRIVATE unittest )
 
 target_link_libraries( UnitTests PRIVATE CryptoCom )
+
+add_custom_target( check COMMAND UnitTests )
 
 
 #===-----------------------------------------------------------------------===

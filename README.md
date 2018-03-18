@@ -7,21 +7,17 @@ This project is an exercise in the Private Pet Intersection with Oblivious Funct
 Dependencies
 ------------
 
- * CMake 3.4
- * GCC 4.8+ or Apple Clang 6.3+ or equivalent (these are the tested compilers at least)
- * Boost Libraries 1.58.0+
+ * CMake 3.9
+ * C++14 capable C++ compiler
+
 
 Building
 --------
 
-It's a very simple project so there should be no complications.
+The CryptoCom library is by default a header only library and requires no building. Installation should be as straightforward as to set it up in the include directory path. However, to understand its usage you might want to check out the unit tests written to develop and to document the behaviour of the library.
 
-    mkdir ../build-psi-cpp
-		cd ../build-psi-cpp
-		cmake ../[directory-of-the-clone]
-		make
+While the project is using CMake as a build system, CTest so far doesn't integrate well with Cath unit testing framework so at the moment you can not run it with CTest. You can, however, just run it via calling the check target.
 
-Running
--------
-
-The executable isn't configurable so you need to fiddle with the input and output. It is because I was just trying to a quick job of it. Later perhaps I revisit and make it more general, a good source for learning.
+    $ cmake . -B build-release -DCMAKE_BUILD_TYPE=Release
+    $ ninja -C build-release
+    $ ninja check -C build-release
