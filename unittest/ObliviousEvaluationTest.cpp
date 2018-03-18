@@ -40,18 +40,19 @@ namespace CryptoCom {
 
 
 TEST_CASE( "Private set intersection using oblivious polynomial evaluation" ) {
-  using PSI = CryptoCom::ObliviousEvaluation< RingTraits >;
-  using Ring = PSI::Ring;
+  using namespace CryptoCom::ObliviousEvaluation;
+  using TestClientSet = ClientSet< RingTraits, int32_t >;
+
+  TestClientSet client {
+    TestClientSet::Ring{5}, TestClientSet::Ring{7},
+    { 1, 2 }, []() { return 1; } };
 
   SECTION( "preparing a set is to create an polynomial with encrypted coefficients" ) {
-    std::set< int32_t > originalSet { 1, 2 };
-    auto const encryptedPolynomial = PSI::EncryptedPolynomial(
-        originalSet, Ring{ 5 }, 
-        []() { return 1; } );
+    auto const encryptedPolynomial = client.forServer();
     REQUIRE( encryptedPolynomial.size() == 3 );
     CHECK( encryptedPolynomial[ 0 ] ==
-        PSI::EncryptionSystem::Cipher( Ring{ 2 }, Ring{ 10 } ) );
+        TestClientSet::Cipher( TestClientSet::Ring{ 2 }, TestClientSet::Ring{ 10 } ) );
     CHECK( encryptedPolynomial[ 1 ] ==
-        PSI::EncryptionSystem::Cipher( Ring{ 2 }, Ring{ -15 } ) );
+        TestClientSet::Cipher( TestClientSet::Ring{ 2 }, TestClientSet::Ring{ -15 } ) );
   }
 }

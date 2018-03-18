@@ -9,74 +9,92 @@
 #include <set>
 
 namespace CryptoCom {
+  namespace ObliviousEvaluation {
 
-  template< typename RingTraits >
-    struct ObliviousEvaluation {
-      using Ring = CyclicRing< RingTraits >;
-      using EncryptionSystem = ElGamal< RingTraits >;
-      using Cipher = typename EncryptionSystem::Cipher;
-      using RNG = typename EncryptionSystem::RNG;
+    template< typename RingTraits, typename InputType >
+      class ClientSet {
+      public:
+        using Ring = CyclicRing< RingTraits >;
+        using EncryptionSystem = ElGamal< RingTraits >;
+        using Cipher = typename EncryptionSystem::Cipher;
+        using RNG = typename EncryptionSystem::RNG;
 
-      template< typename InputType >
-        static Polynomial< Cipher >
-        EncryptedPolynomial(
-            std::set< InputType > const& localSet,
-            Ring const& publicKey,
-            RNG rng ) {
+      private:
+        Ring const privateKey_;
+        std::map< Ring, InputType > const matchingExponentials_;
+        Polynomial< Cipher > const encryptedPolynomial_;
 
-          auto const inputPolynomial = Polynomial< Ring >::fromRoots(
-              localSet.cbegin(), localSet.cend() );
+      public:
+        ClientSet(
+            Ring publicKey, Ring privateKey,
+            std::set< InputType > const& privateSet,
+            RNG rng )
+          : privateKey_( privateKey )
 
-          std::vector< Cipher > encryptedCoefficients;
-          std::transform(
-              inputPolynomial.cbegin(), inputPolynomial.cend(),
-              std::back_inserter( encryptedCoefficients ),
-              std::bind( EncryptionSystem::Encrypt,
-                publicKey,
-                std::placeholders::_1,
-                rng ) );
-          return Polynomial< Cipher >( std::move( encryptedCoefficients ) );
-        }
+          , matchingExponentials_( [&privateSet]() {
+              std::map< Ring, InputType > exponentialToElem;
+              for( auto const e : privateSet ) {
+                exponentialToElem[ Ring::Generator() ^ e ] = e;
+              }
+              return exponentialToElem;
+            }() )
 
+          , encryptedPolynomial_( [&privateSet, &publicKey, &rng]() {
+              auto const inputPolynomial = Polynomial< Ring >::fromRoots(
+                  privateSet.cbegin(), privateSet.cend() );
 
-      template< typename InputType >
-        static std::vector< Cipher >
-        Evaluate(
-            std::set< InputType > const& localSet,
-            Polynomial<  Cipher > const& encryptedPolynomial,
-            RNG rng ) {
-          std::vector< Cipher > result;
-          for ( auto const localElem : localSet ) {
-            auto const c = cryptoroup( localElem );
-            auto const evaluated = encryptedPolynomial( c );
-            result.push_back( evaluated * rng() + c );
-          }
-
-          return result;
-        }
+              std::vector< Cipher > encryptedCoefficients;
+              std::transform(
+                  inputPolynomial.cbegin(), inputPolynomial.cend(),
+                  std::back_inserter( encryptedCoefficients ),
+                  [&rng, &publicKey]( auto const& plain ) {
+                    return EncryptionSystem::Encrypt( plain, publicKey, rng ); } );
+              return Polynomial< Cipher >{ std::move( encryptedCoefficients ) };
+            }() ) {}
 
 
-      template< typename InputType >
-        static typename std::set< InputType >
-        ExtractIntersection(
-            std::set< InputType > localSet,
-            std::vector< Cipher > const& evaluatedElements,
+        Polynomial< Cipher > forServer() const { return encryptedPolynomial_; }
+
+        typename std::set< InputType >
+        intersection(
+            std::set< Cipher > const& evaluatedElements,
             Ring const& privateKey ) {
-
-          std::map< Ring, InputType > searchSet;
-          for( auto const e : localSet ) {
-            searchSet[ Ring::Generator() ^ e ] = e;
-          }
 
           std::set< InputType > results;
           for( auto const& e : evaluatedElements ) {
             auto const decryptedElem = EncryptionSystem::decrypt( privateKey, e );
-            auto const it = searchSet.find( decryptedElem );
-            if ( it != searchSet.end() )
+            auto const it = matchingExponentials_.find( decryptedElem );
+            if ( it != matchingExponentials_.end() )
               results.insert( it->second );
           }
 
           return results;
         }
-    };
+      };
+
+
+    template< typename RingTraits, typename InputType >
+      class ServerSet {
+        std::set< InputType > const privateSet_;
+
+      public:
+        ServerSet( std::set< InputType > const& elems ) : privateSet_( elems ) {}
+
+        using EncryptionSystem = ElGamal< RingTraits >;
+        using Cipher = typename EncryptionSystem::Cipher;
+        using RNG = typename EncryptionSystem::RNG;
+
+        std::set< Cipher >
+        evaluate( Polynomial< Cipher > const& fromClient, RNG rng ) const {
+          std::set< Cipher > result;
+          for ( auto const localElem : privateSet_ ) {
+            auto const c = cryptoroup( localElem );
+            auto const evaluated = fromClient( c );
+            result.insert( evaluated * rng() + c );
+          }
+
+          return result;
+        }
+      };
+  } // ObliviousEvaluation 
 } // CryptoCom
