@@ -26,10 +26,9 @@ namespace CryptoCom {
       std::tie( g, x, std::ignore ) = ExtendedGCD< T, CoefficientType >( a, b );
 
       if ( g == 1 ) {
-        if ( x < 0 )
-          return T( b + x );
-
-        return T( x ) % b;
+        return x < 0
+          ? T( b + x )
+          : T( x ) % b;
       }
 
       throw std::invalid_argument( "relative primes have no inverse modulo" );
