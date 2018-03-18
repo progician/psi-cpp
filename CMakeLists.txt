@@ -6,7 +6,6 @@ set( CMAKE_CXX_STANDARD_REQUIRED ON )
 set( CMAKE_CXX_EXTENSIONS OFF )
 
 find_package( Boost REQUIRED )
-find_package( Catch REQUIRED )
 
 #===-----------------------------------------------------------------------===
 # CryptoCom library
@@ -25,10 +24,9 @@ add_executable( UnitTests
   unittest/PolynomialTest.cpp
   unittest/UnitTestMain.cpp )
 
-target_link_libraries( UnitTests
-  PRIVATE
-    CryptoCom
-    Catch::catch )
+target_include_directories( UnitTests PRIVATE unittest )
+
+target_link_libraries( UnitTests PRIVATE CryptoCom )
 
 
 #===-----------------------------------------------------------------------===
