@@ -46,6 +46,10 @@ namespace CryptoCom {
       };
 
 
+      static Ring Decipher( Ring const& e )
+      { return Ring::Generator() ^ e; }
+
+
       static std::tuple< Ring, Ring >
       KeyPairOf( std::function< Ring() > rng ) {
         return ElGamal< RingTraits >::KeyPairOf( rng );

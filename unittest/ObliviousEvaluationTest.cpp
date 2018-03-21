@@ -3,56 +3,45 @@
 
 
 namespace {
-  struct RingTraits {
-    using PrimaryType = int32_t;
-    using EscalationType = int64_t;
-    using CoefficientType = int64_t;
+  struct NoEncryption {
+    using Cipher = int32_t;
+    using Ring = int32_t;
+    using RNG = std::function< int32_t() >;
 
-    static constexpr PrimaryType Order = 1483;
-    static constexpr PrimaryType Generator = 2;
-    static constexpr PrimaryType AdditiveIdentity = 0;
-    static constexpr PrimaryType MultiplicativeIdentity = 1;
+
+    static Ring Decipher( Ring const& e ) { return e; }
+
+    static std::tuple< int32_t, int32_t >
+    KeyPairOf( std::function< int32_t() > rng ) {
+      return std::make_tuple( 1, 1 );
+    }
+
+    static Cipher
+    Encrypt( Ring const& key, Ring const& plainText, RNG ) {
+      return plainText;
+    }
+
+    static Cipher
+    Decrypt( Ring const& key, Cipher const& encryptedMessage ) {
+      return encryptedMessage;
+    }
   };
 }
 
 
-namespace CryptoCom {
-
-  std::ostream&
-  operator <<( std::ostream& ostr, CyclicRing< RingTraits > const& e ) {
-    ostr << e.ordinalIndex_;
-    return ostr;
-  }
-
-
-  std::ostream&
-  operator <<( std::ostream& ostr, ExponentialElGamal< RingTraits >::Cipher const& c ) {
-    ostr << "("
-         << std::get< 0 >( c.components )
-         << ", "
-         << std::get< 1 >( c.components )
-         << ")";
-    return ostr;
-  }
-
-} // CryptoCom
-
-
-
-TEST_CASE( "Private set intersection using oblivious polynomial evaluation" ) {
+TEST_CASE( "Private set intersection using oblivious polynomial evaluation, where we use plain text with no encryption" ) {
   using namespace CryptoCom::ObliviousEvaluation;
-  using TestClientSet = ClientSet< RingTraits, int32_t >;
+  using TestClientSet = ClientSet< int32_t, int32_t, NoEncryption >;
 
   TestClientSet client {
     TestClientSet::Ring{5}, TestClientSet::Ring{7},
-    { 1, 2 }, []() { return 1; } };
+    { 3, 6 }, []() { return 1; } };
 
   SECTION( "preparing a set is to create an polynomial with encrypted coefficients" ) {
     auto const encryptedPolynomial = client.forServer();
     REQUIRE( encryptedPolynomial.size() == 3 );
-    CHECK( encryptedPolynomial[ 0 ] ==
-        TestClientSet::Cipher( TestClientSet::Ring{ 2 }, TestClientSet::Ring{ 10 } ) );
-    CHECK( encryptedPolynomial[ 1 ] ==
-        TestClientSet::Cipher( TestClientSet::Ring{ 2 }, TestClientSet::Ring{ -15 } ) );
+    CHECK( encryptedPolynomial[ 2 ] == 1  );
+    CHECK( encryptedPolynomial[ 1 ] == -9 );
+    CHECK( encryptedPolynomial[ 0 ] == 18 );
   }
 }

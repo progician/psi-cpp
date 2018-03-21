@@ -12,6 +12,8 @@ namespace CryptoCom {
       using RNG = std::function< Ring() >;
       using Cipher = std::tuple< Ring, Ring >;
 
+      static Ring Decipher( Ring const& e ) { return e; }
+
 
       static std::tuple< Ring, Ring >
       KeyPairOf( std::function< Ring() > rng ) {

@@ -7,11 +7,13 @@
 
 namespace CryptoCom {
 
-  template< typename Traits >
+  template< typename RingTraits >
     class CyclicRing {
-      typename Traits::PrimaryType ordinalIndex_;
+      typename RingTraits::PrimaryType ordinalIndex_;
 
     public:
+      using Traits = RingTraits;
+
       constexpr CyclicRing( typename Traits::PrimaryType const ordinalIndex )
         : ordinalIndex_( ordinalIndex < Traits::Order
             ? ordinalIndex

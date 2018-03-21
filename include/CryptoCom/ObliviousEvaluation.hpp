@@ -11,36 +11,40 @@
 namespace CryptoCom {
   namespace ObliviousEvaluation {
 
-    template< typename RingTraits, typename InputType >
+    template<
+        typename RingType,
+        typename InputType,
+        typename EncryptionSystem =
+          ExponentialElGamal< typename RingType::Traits > >
       class ClientSet {
       public:
-        using Ring = CyclicRing< RingTraits >;
-        using EncryptionSystem = ElGamal< RingTraits >;
+        using Ring = RingType;
         using Cipher = typename EncryptionSystem::Cipher;
         using RNG = typename EncryptionSystem::RNG;
 
       private:
-        Ring const privateKey_;
-        std::map< Ring, InputType > const matchingExponentials_;
+        RingType const privateKey_;
+        std::map< RingType, InputType > const deciphered_;
         Polynomial< Cipher > const encryptedPolynomial_;
 
       public:
         ClientSet(
-            Ring publicKey, Ring privateKey,
+            RingType publicKey, RingType privateKey,
             std::set< InputType > const& privateSet,
             RNG rng )
           : privateKey_( privateKey )
 
-          , matchingExponentials_( [&privateSet]() {
-              std::map< Ring, InputType > exponentialToElem;
+          , deciphered_( [&privateSet]() {
+              std::map< RingType, InputType > deciphered;
               for( auto const e : privateSet ) {
-                exponentialToElem[ Ring::Generator() ^ e ] = e;
+                deciphered[ EncryptionSystem::Decipher( e ) ] = e;
               }
-              return exponentialToElem;
+              return deciphered;
             }() )
 
           , encryptedPolynomial_( [&privateSet, &publicKey, &rng]() {
-              auto const inputPolynomial = Polynomial< Ring >::fromRoots(
+              auto const inputPolynomial =
+                Polynomial< RingType >::fromRoots(
                   privateSet.cbegin(), privateSet.cend() );
 
               std::vector< Cipher > encryptedCoefficients;
@@ -48,23 +52,27 @@ namespace CryptoCom {
                   inputPolynomial.cbegin(), inputPolynomial.cend(),
                   std::back_inserter( encryptedCoefficients ),
                   [&rng, &publicKey]( auto const& plain ) {
-                    return EncryptionSystem::Encrypt( plain, publicKey, rng ); } );
-              return Polynomial< Cipher >{ std::move( encryptedCoefficients ) };
+                    return EncryptionSystem::Encrypt(
+                        publicKey, plain, rng ); } );
+              return Polynomial< Cipher >{
+                std::move( encryptedCoefficients ) };
             }() ) {}
 
 
-        Polynomial< Cipher > forServer() const { return encryptedPolynomial_; }
+        Polynomial< Cipher > forServer() const
+        { return encryptedPolynomial_; }
 
         typename std::set< InputType >
         intersection(
             std::set< Cipher > const& evaluatedElements,
-            Ring const& privateKey ) {
+            RingType const& privateKey ) {
 
           std::set< InputType > results;
           for( auto const& e : evaluatedElements ) {
-            auto const decryptedElem = EncryptionSystem::decrypt( privateKey, e );
-            auto const it = matchingExponentials_.find( decryptedElem );
-            if ( it != matchingExponentials_.end() )
+            auto const decryptedElem =
+              EncryptionSystem::decrypt( privateKey, e );
+            auto const it = deciphered_.find( decryptedElem );
+            if ( it != deciphered_.end() )
               results.insert( it->second );
           }
 
@@ -73,14 +81,18 @@ namespace CryptoCom {
       };
 
 
-    template< typename RingTraits, typename InputType >
+    template<
+        typename RingType,
+        typename InputType,
+        typename EncryptionSystem =
+          ExponentialElGamal< typename RingType::Traits > >
       class ServerSet {
         std::set< InputType > const privateSet_;
 
       public:
-        ServerSet( std::set< InputType > const& elems ) : privateSet_( elems ) {}
+        ServerSet( std::set< InputType > const& elems )
+          : privateSet_( elems ) {}
 
-        using EncryptionSystem = ElGamal< RingTraits >;
         using Cipher = typename EncryptionSystem::Cipher;
         using RNG = typename EncryptionSystem::RNG;
 
