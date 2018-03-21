@@ -32,6 +32,7 @@ namespace {
 TEST_CASE( "Private set intersection using oblivious polynomial evaluation, where we use plain text with no encryption" ) {
   using namespace CryptoCom::ObliviousEvaluation;
   using TestClientSet = ClientSet< int32_t, int32_t, NoEncryption >;
+  using TestServerSet = ServerSet< int32_t, int32_t, NoEncryption >;
 
   TestClientSet client {
     TestClientSet::Ring{5}, TestClientSet::Ring{7},
@@ -50,5 +51,15 @@ TEST_CASE( "Private set intersection using oblivious polynomial evaluation, wher
     auto const intersection = client.intersection( { 2, 3, 12 }, 11 );
     REQUIRE( intersection.size() == 1 );
     CHECK( intersection.count( 3 ) );
+  }
+
+  SECTION( "evaluating polynomial on server side" ) {
+    TestServerSet server( { 2, 3, 12 } );
+    CryptoCom::Polynomial< int32_t > polynomial( { 18, -9, 1 } );
+    auto const evaluated = server.evaluate( polynomial,
+        []() { return 1; } );
+    CHECK( evaluated.count( 2 ) == 0 );
+    CHECK( evaluated.count( 3 ) == 1 );
+    CHECK( evaluated.count( 12 ) == 0 );
   }
 }

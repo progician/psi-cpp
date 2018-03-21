@@ -100,7 +100,7 @@ namespace CryptoCom {
         evaluate( Polynomial< Cipher > const& fromClient, RNG rng ) const {
           std::set< Cipher > result;
           for ( auto const localElem : privateSet_ ) {
-            auto const c = cryptoroup( localElem );
+            auto const c =  RingType{ localElem };
             auto const evaluated = fromClient( c );
             result.insert( evaluated * rng() + c );
           }
