@@ -65,12 +65,12 @@ namespace CryptoCom {
         typename std::set< InputType >
         intersection(
             std::set< Cipher > const& evaluatedElements,
-            RingType const& privateKey ) {
+            RingType const& privateKey ) const {
 
           std::set< InputType > results;
           for( auto const& e : evaluatedElements ) {
             auto const decryptedElem =
-              EncryptionSystem::decrypt( privateKey, e );
+              EncryptionSystem::Decrypt( privateKey, e );
             auto const it = deciphered_.find( decryptedElem );
             if ( it != deciphered_.end() )
               results.insert( it->second );

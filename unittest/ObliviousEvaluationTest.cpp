@@ -38,10 +38,17 @@ TEST_CASE( "Private set intersection using oblivious polynomial evaluation, wher
     { 3, 6 }, []() { return 1; } };
 
   SECTION( "preparing a set is to create an polynomial with encrypted coefficients" ) {
-    auto const encryptedPolynomial = client.forServer();
-    REQUIRE( encryptedPolynomial.size() == 3 );
-    CHECK( encryptedPolynomial[ 2 ] == 1  );
-    CHECK( encryptedPolynomial[ 1 ] == -9 );
-    CHECK( encryptedPolynomial[ 0 ] == 18 );
+    auto const polynomial = client.forServer();
+    REQUIRE( polynomial.size() == 3 );
+    CHECK( polynomial[ 2 ] == 1  );
+    CHECK( polynomial[ 1 ] == -9 );
+    CHECK( polynomial[ 0 ] == 18 );
+  }
+
+
+  SECTION( "extracting intersection from evaluated polynomial set" ) {
+    auto const intersection = client.intersection( { 2, 3, 12 }, 11 );
+    REQUIRE( intersection.size() == 1 );
+    CHECK( intersection.count( 3 ) );
   }
 }
