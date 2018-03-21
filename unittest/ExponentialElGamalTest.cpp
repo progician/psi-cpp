@@ -74,6 +74,7 @@ TEST_CASE( "Exponential ElGamal encryption scheme" ) {
       Ring constexpr eight { 8 };
       Ring constexpr twelve { 12 };
       Ring constexpr twenty { 20 };
+      Ring constexpr ninetysix { 8 * 12 };
 
       std::list< Ring > additiveSequence = { Ring{ 3 }, Ring{ 6 } };
 
@@ -96,6 +97,13 @@ TEST_CASE( "Exponential ElGamal encryption scheme" ) {
         additiveSequence = std::list< Ring >{ Ring{ 3 } };
         auto const encryptedTwenty = EncryptionScheme::Encrypt( publicKey, twenty, sequenceFunction );
         REQUIRE( encryptedEight + twelve == encryptedTwenty );
+      }
+
+      SECTION( "adding the encrypted cipher to itself is the same as multiplying with plain number two" ) {
+        Ring constexpr sixteen{ 16 };
+        additiveSequence = std::list< Ring >{ Ring{6} };
+        auto const encryptedSixteen = EncryptionScheme::Encrypt( publicKey, sixteen, sequenceFunction );
+        REQUIRE( encryptedEight * Ring{2} == encryptedSixteen );
       }
     }
   }
