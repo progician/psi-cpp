@@ -71,9 +71,9 @@ TEST_CASE( "ElGamal encryption scheme" ) {
 
 
     SECTION( "encryption is homomorphic to multiplication" ) {
-      Ring constexpr eight { 8 };
-      Ring constexpr twelve { 12 };
-      Ring constexpr ninetySix { 96 };
+      Ring eight { 8 };
+      Ring twelve { 12 };
+      Ring ninetySix { 96 };
 
       std::list< Ring > additiveSequence = {
         Ring{ 3 }, Ring{ 6 }, Ring{ 9 } };

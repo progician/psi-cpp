@@ -14,12 +14,15 @@ namespace CryptoCom {
     public:
       using Traits = RingTraits;
 
-      constexpr CyclicRing( typename Traits::PrimaryType const ordinalIndex )
-        : ordinalIndex_( ordinalIndex < Traits::Order
-            ? ordinalIndex
-            : throw std::runtime_error( "ordinalIndex exceeds ring's order" ) ) { } 
+      CyclicRing( typename Traits::PrimaryType const ordinalIndex )
+        : ordinalIndex_(
+            ( typename Traits::EscalationType( Traits::Order ) + ordinalIndex )
+            % Traits::Order ) { } 
 
-      constexpr CyclicRing()
+      CyclicRing( CyclicRing<Traits> const& other )
+        : ordinalIndex_( other.ordinalIndex_ ) {}
+
+      CyclicRing()
         : ordinalIndex_( Traits::AdditiveIdentity ) {}
 
       static CyclicRing< Traits > constexpr Zero() {

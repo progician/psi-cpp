@@ -16,7 +16,7 @@ namespace CryptoCom {
 
 
       static std::tuple< Ring, Ring >
-      KeyPairOf( std::function< Ring() > rng ) {
+      KeyPairOf( RNG rng ) {
         auto const secret = rng();
         return std::make_tuple(
             secret,

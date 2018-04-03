@@ -19,7 +19,7 @@ namespace CryptoCom {
 
       template< typename VariableType >
         CoefficientType operator()( VariableType const& x ) const {
-          VariableType result { coefficients_[ coefficients_.size() - 1 ] };
+          CoefficientType result { coefficients_[ coefficients_.size() - 1 ] };
           for ( size_t idx = 1; idx < coefficients_.size(); idx++ ) {
             result = result * x + coefficients_[ coefficients_.size() - 1 - idx ];
           }
@@ -35,8 +35,7 @@ namespace CryptoCom {
             CoefficientType{} );
         for ( size_t i = 0; i < coefficients_.size(); i++ ) {
           for ( size_t j = 0; j < other.coefficients_.size(); j++ ) {
-            auto const r = 
-              res[ i + j ] += coefficients_[ i ] * other.coefficients_[ j ];
+            res[ i + j ] += coefficients_[ i ] * other.coefficients_[ j ];
           }
         }
 

@@ -35,9 +35,5 @@ add_custom_target( check COMMAND UnitTests )
 
 #===-----------------------------------------------------------------------===
 # External tests
-# add_executable( RoundTrip
-#   test/psi-test.cpp )
-# 
-# target_link_libraries( RoundTrip
-#   PRIVATE
-#     CryptoCom )
+add_executable( RoundTrip test/psi-test.cpp )
+target_link_libraries( RoundTrip PRIVATE CryptoCom )

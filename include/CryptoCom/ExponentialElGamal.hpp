@@ -43,6 +43,12 @@ namespace CryptoCom {
         bool operator==( Cipher const& other ) const {
           return components == other.components;
         }
+
+        bool operator<( Cipher const& other ) const {
+          if ( std::get< 0 >( components ) == std::get< 0 >( other.components ) )
+            return std::get< 1 >( components ) < std::get< 1 >( other.components );
+          return std::get< 0 >( components ) < std::get< 0 >( other.components );
+        }
       };
 
 
@@ -51,7 +57,7 @@ namespace CryptoCom {
 
 
       static std::tuple< Ring, Ring >
-      KeyPairOf( std::function< Ring() > rng ) {
+      KeyPairOf( RNG rng ) {
         return ElGamal< RingTraits >::KeyPairOf( rng );
       }
 

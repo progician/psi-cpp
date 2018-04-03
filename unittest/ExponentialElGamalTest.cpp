@@ -71,10 +71,10 @@ TEST_CASE( "Exponential ElGamal encryption scheme" ) {
 
 
     SECTION( "encryption is homomorphic to" ) {
-      Ring constexpr eight { 8 };
-      Ring constexpr twelve { 12 };
-      Ring constexpr twenty { 20 };
-      Ring constexpr ninetysix { 8 * 12 };
+      Ring eight { 8 };
+      Ring twelve { 12 };
+      Ring twenty { 20 };
+      Ring ninetysix { 8 * 12 };
 
       std::list< Ring > additiveSequence = { Ring{ 3 }, Ring{ 6 } };
 
@@ -100,7 +100,7 @@ TEST_CASE( "Exponential ElGamal encryption scheme" ) {
       }
 
       SECTION( "adding the encrypted cipher to itself is the same as multiplying with plain number two" ) {
-        Ring constexpr sixteen{ 16 };
+        Ring sixteen{ 16 };
         additiveSequence = std::list< Ring >{ Ring{6} };
         auto const encryptedSixteen = EncryptionScheme::Encrypt( publicKey, sixteen, sequenceFunction );
         REQUIRE( encryptedEight * Ring{2} == encryptedSixteen );
