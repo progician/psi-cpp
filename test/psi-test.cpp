@@ -28,47 +28,44 @@ struct RingTraits {
 };
 
 
+using Ring = CryptoCom::CyclicRing< RingTraits >;
+using Encryption = CryptoCom::ExponentialElGamal< RingTraits >;
+using ClientSet = CryptoCom::ObliviousEvaluation::ClientSet<
+  Ring,
+  int32_t,
+  Encryption >;
+using ServerSet = CryptoCom::ObliviousEvaluation::ServerSet<
+  Ring,
+  int32_t,
+  CryptoCom::ExponentialElGamal< RingTraits > >;
+
+
 int
 main( int, char** )
 {
-  using Ring = CryptoCom::CyclicRing< RingTraits >;
   std::default_random_engine generator;
   std::uniform_int_distribution< int32_t > distribution( 1, RingTraits::Order );
-//  auto rng = [&generator, &distribution]() -> Ring {
-//    auto const x = distribution( generator );
-//    return Ring{x};
-//  };
-
-  auto rng = []() {
-//    auto const x = 12;
-    auto x = Ring{12};
-    return x;
+  auto rng = [&generator, &distribution]() -> Ring {
+    auto const x = distribution( generator );
+    return Ring{x};
   };
 
-  using Encryption = CryptoCom::ExponentialElGamal< RingTraits >;
-  auto keys = Encryption::KeyPairOf( rng );
+  Ring public_key, private_key;
+  std::tie(public_key, private_key) = Encryption::KeyPairOf( rng );
   
-  using ClientSet = CryptoCom::ObliviousEvaluation::ClientSet<
-    Ring,
-    int32_t,
-    Encryption >;
   ClientSet client_set {
-    std::get<0>( keys ), std::get<1>( keys ),
+    public_key, private_key,
     { 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22 },
     rng };
 
   auto const polynomial = client_set.forServer();
 
-  using ServerSet = CryptoCom::ObliviousEvaluation::ServerSet<
-    Ring,
-    int32_t,
-    CryptoCom::ExponentialElGamal< RingTraits > >;
   ServerSet server_set { { 3, 6, 9, 12, 15, 18, 21 } };
   auto const evaluated = server_set.evaluate( polynomial, rng );
 
   auto const intersection = client_set.intersection(
       evaluated,
-      std::get<1>( keys ) );
+      private_key );
   std::cout << intersection << std::endl;
 
 	return 0;
