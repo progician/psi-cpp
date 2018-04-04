@@ -24,20 +24,20 @@ namespace CryptoCom {
 
         Cipher operator+( Cipher const& other ) const {
           return Cipher{
-            std::get< 0 >( components ) * std::get< 0 >( other.components ),
-            std::get< 1 >( components ) * std::get< 1 >( other.components ) };
+            std::get<0>( components ) * std::get<0>( other.components ),
+            std::get<1>( components ) * std::get<1>( other.components ) };
         }
 
         Cipher operator+( Ring const& other ) const {
           return Cipher{
-            std::get< 0 >( components ),
-            std::get< 1 >( components ) * ( Ring::Generator() ^ other ) };
+            std::get<0>( components ),
+            std::get<1>( components ) * ( Ring::Generator() ^ other ) };
         }
 
         Cipher operator*( Ring const& other ) const {
           return Cipher{
-            std::get< 0 >( components ) ^ other,
-            std::get< 1 >( components ) ^ other };
+            std::get<0>( components ) ^ other,
+            std::get<1>( components ) ^ other };
         }
 
         bool operator==( Cipher const& other ) const {
@@ -45,9 +45,9 @@ namespace CryptoCom {
         }
 
         bool operator<( Cipher const& other ) const {
-          if ( std::get< 0 >( components ) == std::get< 0 >( other.components ) )
-            return std::get< 1 >( components ) < std::get< 1 >( other.components );
-          return std::get< 0 >( components ) < std::get< 0 >( other.components );
+          if ( std::get<0>( components ) == std::get<0>( other.components ) )
+            return std::get<1>( components ) < std::get<1>( other.components );
+          return std::get<0>( components ) < std::get<0>( other.components );
         }
       };
 
