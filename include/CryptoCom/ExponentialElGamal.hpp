@@ -2,6 +2,7 @@
 
 #include <CryptoCom/CyclicRing.hpp>
 #include <CryptoCom/ElGamal.hpp>
+#include <stdexcept>
 #include <functional>
 #include <tuple>
 
@@ -20,7 +21,11 @@ namespace CryptoCom {
           : components( cipher ) {}
 
         Cipher( Ring const& c0, Ring const& c1 )
-          : components( typename Base::Cipher( c0, c1 ) ) {}
+          : components( typename Base::Cipher( c0, c1 ) ) {
+            if (c0 == Ring::Zero() ||
+                c1 == Ring::Zero())
+            throw std::out_of_range("el gamal cipher can't contian 0");
+          }
 
         Cipher operator+( Cipher const& other ) const {
           return Cipher{

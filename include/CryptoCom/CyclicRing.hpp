@@ -41,6 +41,10 @@ namespace CryptoCom {
         return ordinalIndex_ == other.ordinalIndex_;
       }
 
+      bool operator !=( CyclicRing const& other ) const {
+        return ordinalIndex_ != other.ordinalIndex_;
+      }
+
       bool operator <( CyclicRing const other ) const {
         return ordinalIndex_ < other.ordinalIndex_;
       }

@@ -18,10 +18,10 @@ operator <<( std::ostream& ostr, std::set< int32_t > const& v )
 
 
 struct RingTraits {
-  using PrimaryType = int32_t;
+  using PrimaryType = int64_t;
   using EscalationType = int64_t;
   using CoefficientType = int64_t;
-  static constexpr PrimaryType Order = 2250635938/2;
+  static constexpr PrimaryType Order = 2250635938;
   static constexpr PrimaryType Generator = 3;
   static constexpr PrimaryType AdditiveIdentity = 0;
   static constexpr PrimaryType MultiplicativeIdentity = 1;
@@ -44,7 +44,7 @@ int
 main( int, char** )
 {
   std::default_random_engine generator;
-  std::uniform_int_distribution< int32_t > distribution( 1, RingTraits::Order );
+  std::uniform_int_distribution< int64_t > distribution( 1, RingTraits::Order );
   auto rng = [&generator, &distribution]() -> Ring {
     auto const x = distribution( generator );
     return Ring{x};
