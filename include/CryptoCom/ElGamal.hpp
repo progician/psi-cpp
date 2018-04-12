@@ -35,8 +35,8 @@ namespace CryptoCom {
 
       static Ring
       Decrypt( Ring const& key, Cipher const& encryptedMessage ) {
-        auto const sharedSecret = std::get< 0 >( encryptedMessage ) ^ key;
-        return std::get< 1 >( encryptedMessage ) / sharedSecret;
+        auto const sharedSecret = std::get<0>( encryptedMessage ) ^ key;
+        return std::get<1>( encryptedMessage ) / sharedSecret;
       }
     };
 
