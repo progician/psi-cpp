@@ -1,6 +1,7 @@
 #pragma once
 
 #include <CryptoCom/CyclicRing.hpp>
+#include <array>
 #include <functional>
 #include <tuple>
 
@@ -8,35 +9,28 @@ namespace CryptoCom {
 
   template< typename RingTraits >
     struct ElGamal {
-      using Ring = CyclicRing< RingTraits >;
-      using RNG = std::function< Ring() >;
-      using Cipher = std::tuple< Ring, Ring >;
+      using Ring = CyclicRing<RingTraits>;
+      using RNG = std::function<Ring()>;
+      using Cipher = std::array<Ring, 2>;
 
-      static Ring Decipher( Ring const& e ) { return e; }
-
-
-      static std::tuple< Ring, Ring >
-      KeyPairOf( RNG rng ) {
+      static auto
+      KeyPairOf(RNG rng) {
         auto const secret = rng();
-        return std::make_tuple(
-            secret,
-            Ring::Generator() ^ secret );
+        return std::make_tuple(secret, Ring::Generator() ^ secret);
       }
 
 
       static Cipher
-      Encrypt( Ring const& key, Ring const& plainText, RNG rng ) {
+      Encrypt(Ring const& key, Ring const& plainText, RNG rng) {
         auto const random = rng();
-        return Cipher{
-          Ring::Generator() ^ random,
-          ( key ^ random ) * plainText };
+        return {{Ring::Generator() ^ random, (key ^ random) * plainText}};
       }
 
 
       static Ring
-      Decrypt( Ring const& key, Cipher const& encryptedMessage ) {
-        auto const sharedSecret = std::get<0>( encryptedMessage ) ^ key;
-        return std::get<1>( encryptedMessage ) / sharedSecret;
+      Decrypt(Ring const& key, Cipher const& encryptedMessage) {
+        auto const sharedSecret = encryptedMessage[0] ^ key;
+        return encryptedMessage[1] / sharedSecret;
       }
     };
 

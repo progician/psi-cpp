@@ -2,6 +2,7 @@
 
 #include <CryptoCom/CyclicRing.hpp>
 #include <CryptoCom/ElGamal.hpp>
+#include <array>
 #include <stdexcept>
 #include <functional>
 #include <tuple>
@@ -15,68 +16,62 @@ namespace CryptoCom {
       using Base = ElGamal< RingTraits >;
 
       struct Cipher {
-        std::tuple< Ring, Ring > components;
+        std::array<Ring, 2> components;
         
-        Cipher( typename Base::Cipher const& cipher )
-          : components( cipher ) {}
+        Cipher(typename Base::Cipher const& cipher)
+          : components(cipher) {}
 
-        Cipher( Ring const& c0, Ring const& c1 )
-          : components( typename Base::Cipher( c0, c1 ) ) {
-            if (c0 == Ring::Zero() ||
-                c1 == Ring::Zero())
-            throw std::out_of_range("el gamal cipher can't contian 0");
+        Cipher(Ring const& c0, Ring const& c1)
+          : components(typename Base::Cipher{{c0, c1}}) {
+            if (c0 == Ring::Zero() || c1 == Ring::Zero())
+              throw std::out_of_range("ElGamal cipher can't contain 0");
           }
 
-        Cipher operator+( Cipher const& other ) const {
-          return Cipher{
-            std::get<0>( components ) * std::get<0>( other.components ),
-            std::get<1>( components ) * std::get<1>( other.components ) };
+        Cipher operator+(Cipher const& other) const {
+          return {
+            components[0] * other.components[0],
+            components[1] * other.components[1]
+          };
         }
 
-        Cipher operator+( Ring const& other ) const {
-          return Cipher{
-            std::get<0>( components ),
-            std::get<1>( components ) * ( Ring::Generator() ^ other ) };
+        Cipher operator+(Ring const& other) const {
+          return {components[0], components[1] * (Ring::Generator() ^ other)};
         }
 
-        Cipher operator*( Ring const& other ) const {
-          return Cipher{
-            std::get<0>( components ) ^ other,
-            std::get<1>( components ) ^ other };
+        Cipher operator*(Ring const& other) const {
+          return {components[0] ^ other, components[1] ^ other};
         }
 
-        bool operator==( Cipher const& other ) const {
+        bool operator==(Cipher const& other) const {
           return components == other.components;
         }
 
-        bool operator<( Cipher const& other ) const {
-          if ( std::get<0>( components ) == std::get<0>( other.components ) )
-            return std::get<1>( components ) < std::get<1>( other.components );
-          return std::get<0>( components ) < std::get<0>( other.components );
+        bool operator<(Cipher const& other) const {
+          if (components[0] == other.components[0])
+            return components[1] < other.components[1];
+          return components[0] < other.components[0];
         }
       };
 
 
-      static Ring Decipher( Ring const& e )
+      static Ring Decipher(Ring const& e)
       { return Ring::Generator() ^ e; }
 
 
-      static std::tuple< Ring, Ring >
-      KeyPairOf( RNG rng ) {
-        return ElGamal< RingTraits >::KeyPairOf( rng );
-      }
+      static std::tuple<Ring, Ring>
+      KeyPairOf(RNG rng) { return ElGamal<RingTraits>::KeyPairOf(rng); }
 
 
       static Cipher
-      Encrypt( Ring const& key, Ring const& plainText, RNG rng ) {
-        return ElGamal< RingTraits >::Encrypt(
-            key, Ring::Generator() ^ plainText, rng );
+      Encrypt(Ring const& key, Ring const& plainText, RNG rng) {
+        return ElGamal<RingTraits>::Encrypt(
+            key, Ring::Generator() ^ plainText, rng);
       }
 
 
       static Ring
-      Decrypt( Ring const& key, Cipher const& encryptedMessage ) {
-        return ElGamal< RingTraits >::Decrypt( key, encryptedMessage.components );
+      Decrypt(Ring const& key, Cipher const& encryptedMessage) {
+        return ElGamal<RingTraits>::Decrypt(key, encryptedMessage.components);
       }
     };
 
