@@ -42,8 +42,8 @@ TEST_CASE("Exponential ElGamal encryption scheme") {
 
   SECTION("with a valid encryption key pair") {
     auto const keyPair = EncryptionScheme::KeyPairOf([]() { return Ring{5}; });
-    auto const privateKey = std::get<0>(keyPair);
-    auto const publicKey = std::get<1>(keyPair);
+    EncryptionScheme::Ring privateKey, publicKey;
+    std::tie(privateKey, publicKey) = keyPair;
     REQUIRE(privateKey == 5);
     REQUIRE(publicKey == 32);
 

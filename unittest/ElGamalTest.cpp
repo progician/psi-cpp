@@ -9,10 +9,10 @@ namespace {
     using EscalationType = int64_t;
     using CoefficientType = int64_t;
 
-    static constexpr PrimaryType Order = 1483;
-    static constexpr PrimaryType Generator = 2;
-    static constexpr PrimaryType AdditiveIdentity = 0;
-    static constexpr PrimaryType MultiplicativeIdentity = 1;
+    static constexpr PrimaryType Order{1483};
+    static constexpr PrimaryType Generator{2};
+    static constexpr PrimaryType AdditiveIdentity{0};
+    static constexpr PrimaryType MultiplicativeIdentity{1};
   };
 
 } // anonymous
