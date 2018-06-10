@@ -14,15 +14,15 @@ namespace CryptoCom {
     public:
       using Traits = RingTraits;
 
-      CyclicRing( typename Traits::PrimaryType const ordinalIndex )
+      constexpr CyclicRing( typename Traits::PrimaryType const ordinalIndex ) noexcept
         : ordinalIndex_(
             ( typename Traits::EscalationType( Traits::Order ) + ordinalIndex )
             % Traits::Order ) { } 
 
-      CyclicRing( CyclicRing<Traits> const& other )
+      constexpr CyclicRing( const CyclicRing<Traits>& other ) noexcept
         : ordinalIndex_( other.ordinalIndex_ ) {}
 
-      CyclicRing()
+      constexpr CyclicRing() noexcept
         : ordinalIndex_( Traits::AdditiveIdentity ) {}
 
       static CyclicRing< Traits > constexpr Zero() {

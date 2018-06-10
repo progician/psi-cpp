@@ -9,10 +9,22 @@ namespace {
     using EscalationType = int64_t;
     using CoefficientType = int64_t;
 
-    static constexpr PrimaryType Order = 1483;
-    static constexpr PrimaryType Generator = 2;
-    static constexpr PrimaryType AdditiveIdentity = 0;
-    static constexpr PrimaryType MultiplicativeIdentity = 1;
+    static constexpr PrimaryType Order{1483};
+    static constexpr PrimaryType Generator{2};
+    static constexpr PrimaryType AdditiveIdentity{0};
+    static constexpr PrimaryType MultiplicativeIdentity{1};
+  };
+
+
+  struct SmallRingTraits {
+    using PrimaryType = int32_t;
+    using EscalationType = int64_t;
+    using CoefficientType = int64_t;
+
+    static constexpr PrimaryType Order{19};
+    static constexpr PrimaryType Generator{2};
+    static constexpr PrimaryType AdditiveIdentity{0};
+    static constexpr PrimaryType MultiplicativeIdentity{1};
   };
 }
 
@@ -32,6 +44,18 @@ namespace CryptoCom {
     return ostr;
   }
 
+  std::ostream&
+  operator<<(std::ostream& ostr, CyclicRing<SmallRingTraits> const& e) {
+    ostr << e.ordinalIndex_;
+    return ostr;
+  }
+
+
+  std::ostream&
+  operator<<(std::ostream& ostr, ExponentialElGamal<SmallRingTraits>::Cipher const& c) {
+    ostr << "(" << c.components[0] << ", " << c.components[1] << ")";
+    return ostr;
+  }
 } // CryptoCom
 
 
@@ -81,14 +105,14 @@ TEST_CASE("Exponential ElGamal encryption scheme") {
       SECTION("adding to other cipher with adding the random 'salts' together") {
         additiveSequence = {9};
         auto const encryptedTwenty =
-            EncryptionScheme::Encrypt( publicKey, twenty, sequenceFunction );
+            EncryptionScheme::Encrypt(publicKey, twenty, sequenceFunction);
         REQUIRE(encryptedEight + encryptedTwelve == encryptedTwenty);
       }
 
       SECTION("adding to plaintext with keeping the random salt the same") {
         additiveSequence = {3};
         auto const encryptedTwenty =
-            EncryptionScheme::Encrypt( publicKey, twenty, sequenceFunction );
+            EncryptionScheme::Encrypt(publicKey, twenty, sequenceFunction);
         REQUIRE(encryptedEight + twelve == encryptedTwenty);
       }
 
@@ -102,10 +126,24 @@ TEST_CASE("Exponential ElGamal encryption scheme") {
       }
 
       SECTION("even in negative range") {
-        additiveSequence = {3, 6, 9};
-        auto const one = EncryptionScheme::Encrypt(privateKey, 1, sequenceFunction);
-        auto const minus_one = EncryptionScheme::Encrypt(privateKey, -1, sequenceFunction);
-        auto const zero = EncryptionScheme::Encrypt(privateKey, 0, sequenceFunction);
+        using Ring = CryptoCom::CyclicRing<SmallRingTraits>;
+        using EncryptionScheme = CryptoCom::ExponentialElGamal<SmallRingTraits>;
+
+        std::list<Ring> rndSeq{3, 6, 9};
+        EncryptionScheme::RNG rng = [&rndSeq]() {
+          auto res = rndSeq.front();
+          rndSeq.pop_front();
+          return res;
+        };
+
+        Ring sk, pk;
+        std::tie(sk, pk) = EncryptionScheme::KeyPairOf([](){ return 3; });
+
+        auto const one = EncryptionScheme::Encrypt(sk, 1, rng);
+        auto const minus_one = EncryptionScheme::Encrypt(sk, -1, rng);
+        auto const zero = EncryptionScheme::Encrypt(sk, 0, rng);
+        auto const my_sum = one + minus_one;
+        auto const decrypted_sum = EncryptionScheme::Decrypt(pk, my_sum);
         REQUIRE(one + minus_one == zero);
       }
     }
