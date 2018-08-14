@@ -46,7 +46,7 @@ namespace CryptoCom {
             }() )
 
           , encryptedPolynomial_( [&privateSet, &publicKey, &rng]() {
-              using Poly = Polynomial<RingType>;
+              using Poly = Polynomial<InputType>;
               auto const inputPolynomial =
                 Poly::fromRoots(privateSet.cbegin(), privateSet.cend());
 
@@ -54,7 +54,8 @@ namespace CryptoCom {
               std::transform(
                   inputPolynomial.cbegin(), inputPolynomial.cend(),
                   std::back_inserter(encryptedCoefficients),
-                  std::bind(EncryptionSystem::Encrypt, publicKey, std::placeholders::_1, rng));
+                  [&publicKey, &rng](InputType coeff) { return EncryptionSystem::Encrypt(publicKey, coeff, rng); }
+              );
               return Polynomial<Cipher>{std::move(encryptedCoefficients)};
             }() ) {}
 

@@ -62,11 +62,12 @@ namespace CryptoCom {
       KeyPairOf(RNG rng) { return ElGamal<RingTraits>::KeyPairOf(rng); }
 
 
-      static Cipher
-      Encrypt(Ring const& key, Ring const& plainText, RNG rng) {
-        return ElGamal<RingTraits>::Encrypt(
-            key, Ring::Generator() ^ plainText, rng);
-      }
+      template<typename IntegralType>
+        static Cipher
+        Encrypt(Ring const& key, IntegralType plainText, RNG rng) {
+          return ElGamal<RingTraits>::Encrypt(
+              key, Ring::Generator() ^ plainText, rng);
+        }
 
 
       static Ring
