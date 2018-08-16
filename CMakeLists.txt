@@ -24,12 +24,11 @@ add_executable(UnitTests
   unittest/ExponentialElGamalTest.cpp
   unittest/ObliviousEvaluationTest.cpp
   unittest/PolynomialTest.cpp
-  unittest/UnitTestMain.cpp )
+  unittest/UnitTestMain.cpp
+)
 
 target_include_directories(UnitTests PRIVATE unittest)
-
 target_link_libraries(UnitTests PRIVATE CryptoCom)
-
 add_custom_target(check COMMAND UnitTests)
 
 

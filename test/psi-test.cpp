@@ -35,10 +35,6 @@ using ServerSet =
         Ring, int32_t, CryptoCom::ExponentialElGamal<RingTraits>>;
 
 
-class AssertionFailure
-: public std::runtime_error {
-
-}
 void assert_set_equal(std::set<int32_t> const& a, std::set<int32_t> const& b) {
   assert(a.size() == b.size());
   for(auto e : a) {
