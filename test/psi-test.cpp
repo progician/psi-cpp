@@ -4,6 +4,7 @@
 #include <iostream>
 #include <random>
 #include <set>
+#include <stdexcept>
 
 
 std::ostream& operator<<(std::ostream& ostr, std::set<int32_t> const& v) {
@@ -34,6 +35,18 @@ using ServerSet =
         Ring, int32_t, CryptoCom::ExponentialElGamal<RingTraits>>;
 
 
+class AssertionFailure
+: public std::runtime_error {
+
+}
+void assert_set_equal(std::set<int32_t> const& a, std::set<int32_t> const& b) {
+  assert(a.size() == b.size());
+  for(auto e : a) {
+    assert(b.count(e) == 1);
+  }
+}
+
+
 int main(int, char**) {
   std::default_random_engine generator;
   std::uniform_int_distribution<int64_t> distribution{1, RingTraits::Order};
@@ -52,7 +65,7 @@ int main(int, char**) {
 
   // Receive from server
   auto const intersection = client_set.intersection(evaluated, private_key);
-  std::cout << intersection << std::endl;
+  assert_set_equal(intersection, {6, 12, 18});
 
 	return 0;
 }
