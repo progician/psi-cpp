@@ -59,27 +59,26 @@ namespace CryptoCom {
 } // CryptoCom
 
 
-TEST_CASE("Exponential ElGamal encryption scheme") {
+TEST_CASE("The exponential ElGamal encryption scheme") {
   using Ring = CryptoCom::CyclicRing<RingTraits>;
-  using EncryptionScheme = CryptoCom::ExponentialElGamal<RingTraits>;
-
+  using ExpElGamal = CryptoCom::ExponentialElGamal<RingTraits>;
 
   SECTION("with a valid encryption key pair") {
-    auto const keyPair = EncryptionScheme::KeyPairOf([]() { return Ring{5}; });
-    EncryptionScheme::Ring privateKey, publicKey;
-    std::tie(privateKey, publicKey) = keyPair;
-    REQUIRE(privateKey == 5);
-    REQUIRE(publicKey == 32);
+    auto const keyPair = ExpElGamal::KeyPairOf([]() { return Ring{5}; });
+    ExpElGamal::Ring private_key, public_key;
+    std::tie(private_key, public_key) = keyPair;
+    REQUIRE(private_key == 5);
+    REQUIRE(public_key == 32);
 
 
     SECTION("encrypting done by an external (random) number results in a valid cipher") {
-      auto const cipher = EncryptionScheme::Encrypt(publicKey, 2, []() { return Ring{3}; });
-      REQUIRE(cipher == EncryptionScheme::Cipher(Ring{8}, Ring{568}));
+      auto const cipher = ExpElGamal::Encrypt(public_key, 2, []() { return Ring{3}; });
+      REQUIRE(cipher == ExpElGamal::Cipher(Ring{8}, Ring{568}));
     }
 
 
     SECTION("decrypting done by using the complementary key and a valid cipher") {
-      auto const plainText = EncryptionScheme::Decrypt(privateKey, {8, 568});
+      auto const plainText = ExpElGamal::Decrypt(private_key, {8, 568});
       REQUIRE(plainText == 4);
     }
 
@@ -90,61 +89,42 @@ TEST_CASE("Exponential ElGamal encryption scheme") {
       Ring const twenty{20};
       Ring const ninetysix{8 * 12};
 
-      std::list<Ring> additiveSequence{3, 6};
-      EncryptionScheme::RNG sequenceFunction = [&additiveSequence]() {
-        auto res = additiveSequence.front();
-        additiveSequence.pop_front();
+      std::list<Ring> seq{3, 6};
+      ExpElGamal::RNG rng = [&seq]() {
+        auto res = seq.front();
+        seq.pop_front();
         return res;
       };
 
-      auto const encryptedEight =
-          EncryptionScheme::Encrypt(publicKey, eight, sequenceFunction);
-      auto const encryptedTwelve =
-          EncryptionScheme::Encrypt(publicKey, twelve, sequenceFunction);
+      auto const cipher_eight = ExpElGamal::Encrypt(public_key, eight, rng);
+      auto const cipher_twelve = ExpElGamal::Encrypt(public_key, twelve, rng);
 
       SECTION("adding to other cipher with adding the random 'salts' together") {
-        additiveSequence = {9};
-        auto const encryptedTwenty =
-            EncryptionScheme::Encrypt(publicKey, twenty, sequenceFunction);
-        REQUIRE(encryptedEight + encryptedTwelve == encryptedTwenty);
+        seq = {9};
+        auto const cipher_twenty =
+            ExpElGamal::Encrypt(public_key, twenty, rng);
+        REQUIRE(cipher_eight + cipher_twelve == cipher_twenty);
+      }
+
+      SECTION("adding a number and its negative, so it results in zero") {
+        seq = {3, 6, 9};
+        auto const cipher_one = ExpElGamal::Encrypt(private_key, 1, rng);
+        auto const cipher_minus_one = ExpElGamal::Encrypt(public_key, -1, rng);
+        auto const cipher_zero = ExpElGamal::Encrypt(private_key, 0, rng);
+        REQUIRE(cipher_one + cipher_minus_one == cipher_zero);
       }
 
       SECTION("adding to plaintext with keeping the random salt the same") {
-        additiveSequence = {3};
-        auto const encryptedTwenty =
-            EncryptionScheme::Encrypt(publicKey, twenty, sequenceFunction);
-        REQUIRE(encryptedEight + twelve == encryptedTwenty);
+        seq = {3};
+        auto const cipher_twenty = ExpElGamal::Encrypt(public_key, twenty, rng);
+        REQUIRE(cipher_eight + twelve == cipher_twenty);
       }
 
       SECTION("adding the encrypted cipher to itself is the same as multiplying"
               "with plain number two") {
-        const Ring sixteen{16};
-        additiveSequence = {6};
-        auto const encryptedSixteen =
-            EncryptionScheme::Encrypt(publicKey, sixteen, sequenceFunction);
-        REQUIRE(encryptedEight * 2 == encryptedSixteen);
-      }
-
-      SECTION("even in negative range") {
-        using Ring = CryptoCom::CyclicRing<SmallRingTraits>;
-        using EncryptionScheme = CryptoCom::ExponentialElGamal<SmallRingTraits>;
-
-        std::list<Ring> rndSeq{3, 6, 9};
-        EncryptionScheme::RNG rng = [&rndSeq]() {
-          auto res = rndSeq.front();
-          rndSeq.pop_front();
-          return res;
-        };
-
-        Ring sk, pk;
-        std::tie(sk, pk) = EncryptionScheme::KeyPairOf([](){ return 3; });
-
-        auto const one = EncryptionScheme::Encrypt(sk, 1, rng);
-        auto const minus_one = EncryptionScheme::Encrypt(sk, -1, rng);
-        auto const zero = EncryptionScheme::Encrypt(sk, 0, rng);
-        auto const my_sum = one + minus_one;
-        auto const decrypted_sum = EncryptionScheme::Decrypt(pk, my_sum);
-        REQUIRE(one + minus_one == zero);
+        seq = {6};
+        auto const cipher_sixteen = ExpElGamal::Encrypt(public_key, 16, rng);
+        REQUIRE(cipher_eight * 2 == cipher_sixteen);
       }
     }
   }

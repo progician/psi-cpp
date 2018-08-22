@@ -26,13 +26,20 @@ add_executable(UnitTests
   unittest/PolynomialTest.cpp
   unittest/UnitTestMain.cpp
 )
-
 target_include_directories(UnitTests PRIVATE unittest)
 target_link_libraries(UnitTests PRIVATE CryptoCom)
-add_custom_target(check COMMAND UnitTests)
+add_custom_command(
+  TARGET UnitTests
+  POST_BUILD
+  COMMENT "Running unit tests..."
+  COMMAND UnitTests
+)
 
 
 #===-----------------------------------------------------------------------===
 # External tests
-add_executable(RoundTrip test/psi-test.cpp)
+enable_testing()
+add_executable(RoundTrip test/RoundTrip.cpp)
 target_link_libraries(RoundTrip PRIVATE CryptoCom)
+target_include_directories(RoundTrip PRIVATE unittest)
+add_test(NAME RoundTrip COMMAND RoundTrip)
