@@ -32,34 +32,30 @@ namespace CryptoCom {
           std::set<InputType> const& privateSet,
           RNG rng)
           : privateKey_(privateKey)
+          , deciphered_([&privateSet]() {
+            std::map<RingType, InputType> deciphered;
+            std::transform(privateSet.cbegin(),
+                privateSet.cend(),
+                std::inserter(deciphered, deciphered.end()),
+                [](auto const& e) {
+                  return std::make_pair(EncryptionSystem::Decipher(e), e);
+                });
+            return deciphered;
+          }())
+          , encryptedPolynomial_{[&privateSet, &publicKey, &rng]() {
+            using Poly = Polynomial<InputType>;
+            auto const inputPolynomial =
+                Poly::fromRoots(privateSet.cbegin(), privateSet.cend());
 
-            ,
-            deciphered_([&privateSet]() {
-              std::map<RingType, InputType> deciphered;
-              std::transform(privateSet.cbegin(),
-                  privateSet.cend(),
-                  std::inserter(deciphered, deciphered.end()),
-                  [](auto const& e) {
-                    return std::make_pair(EncryptionSystem::Decipher(e), e);
-                  });
-              return deciphered;
-            }())
-
-            ,
-            encryptedPolynomial_{[&privateSet, &publicKey, &rng]() {
-              using Poly = Polynomial<InputType>;
-              auto const inputPolynomial =
-                  Poly::fromRoots(privateSet.cbegin(), privateSet.cend());
-
-              std::vector<Cipher> encryptedCoefficients;
-              std::transform(inputPolynomial.cbegin(),
-                  inputPolynomial.cend(),
-                  std::back_inserter(encryptedCoefficients),
-                  [&publicKey, &rng](InputType coeff) {
-                    return EncryptionSystem::Encrypt(publicKey, coeff, rng);
-                  });
-              return Polynomial<Cipher>{std::move(encryptedCoefficients)};
-            }()} {}
+            std::vector<Cipher> encryptedCoefficients;
+            std::transform(inputPolynomial.cbegin(),
+                inputPolynomial.cend(),
+                std::back_inserter(encryptedCoefficients),
+                [&publicKey, &rng](InputType coeff) {
+                  return EncryptionSystem::Encrypt(publicKey, coeff, rng);
+                });
+            return Polynomial<Cipher>{std::move(encryptedCoefficients)};
+          }()} {}
 
 
       Polynomial<Cipher> forServer() const { return encryptedPolynomial_; }
@@ -88,7 +84,8 @@ namespace CryptoCom {
       std::set<InputType> const privateSet_;
 
     public:
-      ServerSet(std::set<InputType> const& elems) : privateSet_(elems) {}
+      ServerSet(std::set<InputType> elems)
+          : privateSet_(std::move(elems)) {}
 
       using Cipher = typename EncryptionSystem::Cipher;
       using RNG = typename EncryptionSystem::RNG;

@@ -20,3 +20,5 @@ BreakBeforeTernaryOperators: true
 AlwaysBreakTemplateDeclarations: Yes
 AllowAllParametersOfDeclarationOnNextLine: true
 AlignAfterOpenBracket: false
+BreakConstructorInitializersBeforeComma: false
+BreakConstructorInitializers: BeforeComma

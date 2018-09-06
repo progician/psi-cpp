@@ -18,7 +18,7 @@ namespace CryptoCom {
     struct Cipher {
       std::array<Ring, 2> components;
 
-      Cipher(typename Base::Cipher const& cipher) : components(cipher) {}
+      Cipher(typename Base::Cipher cipher) : components(std::move(cipher)) {}
 
       Cipher(Ring const& c0, Ring const& c1)
           : components(typename Base::Cipher{{c0, c1}}) {

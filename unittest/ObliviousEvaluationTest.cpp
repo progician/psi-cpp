@@ -10,7 +10,7 @@ namespace {
 
     static Ring Decipher(Ring const& e) { return e; }
 
-    static Cipher Encrypt(Ring const&, Ring const& plainText, RNG) {
+    static Cipher Encrypt(Ring const&, Ring const& plainText, RNG&) {
       return plainText;
     }
 

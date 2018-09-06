@@ -17,7 +17,6 @@ std::ostream& operator<<(std::ostream& ostr, std::set<int32_t> const& v) {
 }
 
 
-
 struct RingTraits {
   using PrimaryType = int64_t;
   using EscalationType = int64_t;
