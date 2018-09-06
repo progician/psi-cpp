@@ -43,19 +43,6 @@ namespace CryptoCom {
     ostr << "(" << c.components[0] << ", " << c.components[1] << ")";
     return ostr;
   }
-
-  std::ostream&
-  operator<<(std::ostream& ostr, CyclicRing<SmallRingTraits> const& e) {
-    ostr << e.ordinalIndex_;
-    return ostr;
-  }
-
-
-  std::ostream&
-  operator<<(std::ostream& ostr, ExponentialElGamal<SmallRingTraits>::Cipher const& c) {
-    ostr << "(" << c.components[0] << ", " << c.components[1] << ")";
-    return ostr;
-  }
 } // CryptoCom
 
 
