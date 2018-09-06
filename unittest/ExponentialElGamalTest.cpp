@@ -26,24 +26,24 @@ namespace {
     static constexpr PrimaryType AdditiveIdentity{0};
     static constexpr PrimaryType MultiplicativeIdentity{1};
   };
-}
+} // namespace
 
 
 namespace CryptoCom {
 
-  std::ostream&
-  operator<<(std::ostream& ostr, CyclicRing<RingTraits> const& e) {
+  std::ostream& operator<<(
+      std::ostream& ostr, CyclicRing<RingTraits> const& e) {
     ostr << e.ordinalIndex_;
     return ostr;
   }
 
 
-  std::ostream&
-  operator<<(std::ostream& ostr, ExponentialElGamal<RingTraits>::Cipher const& c) {
+  std::ostream& operator<<(
+      std::ostream& ostr, ExponentialElGamal<RingTraits>::Cipher const& c) {
     ostr << "(" << c.components[0] << ", " << c.components[1] << ")";
     return ostr;
   }
-} // CryptoCom
+} // namespace CryptoCom
 
 
 TEST_CASE("The exponential ElGamal encryption scheme") {
@@ -58,13 +58,16 @@ TEST_CASE("The exponential ElGamal encryption scheme") {
     REQUIRE(public_key == 32);
 
 
-    SECTION("encrypting done by an external (random) number results in a valid cipher") {
-      auto const cipher = ExpElGamal::Encrypt(public_key, 2, []() { return Ring{3}; });
+    SECTION("encrypting done by an external (random) number results in a valid "
+            "cipher") {
+      auto const cipher =
+          ExpElGamal::Encrypt(public_key, 2, []() { return Ring{3}; });
       REQUIRE(cipher == ExpElGamal::Cipher(Ring{8}, Ring{568}));
     }
 
 
-    SECTION("decrypting done by using the complementary key and a valid cipher") {
+    SECTION(
+        "decrypting done by using the complementary key and a valid cipher") {
       auto const plainText = ExpElGamal::Decrypt(private_key, {8, 568});
       REQUIRE(plainText == 4);
     }
@@ -86,10 +89,10 @@ TEST_CASE("The exponential ElGamal encryption scheme") {
       auto const cipher_eight = ExpElGamal::Encrypt(public_key, eight, rng);
       auto const cipher_twelve = ExpElGamal::Encrypt(public_key, twelve, rng);
 
-      SECTION("adding to other cipher with adding the random 'salts' together") {
+      SECTION(
+          "adding to other cipher with adding the random 'salts' together") {
         seq = {9};
-        auto const cipher_twenty =
-            ExpElGamal::Encrypt(public_key, twenty, rng);
+        auto const cipher_twenty = ExpElGamal::Encrypt(public_key, twenty, rng);
         REQUIRE(cipher_eight + cipher_twelve == cipher_twenty);
       }
 

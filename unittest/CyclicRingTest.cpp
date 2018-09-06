@@ -16,13 +16,12 @@ using TestRing = CryptoCom::CyclicRing<TestRingTraits>;
 
 
 namespace CryptoCom {
-  std::ostream&
-  operator <<(std::ostream& ostr, TestRing const& e) {
+  std::ostream& operator<<(std::ostream& ostr, TestRing const& e) {
     ostr << e.ordinalIndex_;
     return ostr;
   }
 
-} // CryptoCom
+} // namespace CryptoCom
 
 
 TEST_CASE("In cyclic rings") {
@@ -30,7 +29,7 @@ TEST_CASE("In cyclic rings") {
   constexpr auto one = TestRing::One();
 
   SECTION("uninitialized element is additive identity") {
-    constexpr TestRing a {3};
+    constexpr TestRing a{3};
     REQUIRE((a + Zero) == a);
   }
 
@@ -38,7 +37,7 @@ TEST_CASE("In cyclic rings") {
     constexpr TestRing a{3};
     auto const b = -a;
     REQUIRE(a + b == Zero);
-  } 
+  }
 
   SECTION("subtraction is adding additive inverse") {
     constexpr TestRing a{3};
@@ -56,13 +55,14 @@ TEST_CASE("In cyclic rings") {
     REQUIRE(a.pow(2) == 9);
   }
 
-  SECTION("multiplication with multiplicative inverse is (multiplicative) identity") {
-    constexpr TestRing  a{3};
+  SECTION("multiplication with multiplicative inverse is (multiplicative) "
+          "identity") {
+    constexpr TestRing a{3};
     REQUIRE(a * a.inverse() == one);
   }
 
   SECTION("division is multiplication with multiplicative inverse") {
-    constexpr TestRing twenty_seven{ 27 };
+    constexpr TestRing twenty_seven{27};
     constexpr TestRing three{3};
     constexpr TestRing nine{9};
     REQUIRE(twenty_seven / three == nine);
@@ -70,7 +70,7 @@ TEST_CASE("In cyclic rings") {
   }
 
   SECTION("negative exponent is multiplied with multiplicative inverse") {
-    constexpr TestRing a {3};
+    constexpr TestRing a{3};
     REQUIRE(a.pow(-1) == a.inverse());
     REQUIRE(a.pow(-2) == TestRing{9}.inverse());
   }
